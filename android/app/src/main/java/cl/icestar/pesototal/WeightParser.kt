@@ -26,7 +26,7 @@ object WeightParser {
     fun clean(raw: String?): String =
         (raw ?: "").filter { it.code in 0x20..0x7E }.trim()
 
-    private val GS1 = Regex("310([0-5])(\d{6})")
+    private val GS1 = Regex("""310([0-5])(\d{6})""")
 
     /**
      * Via correcta: GS1 AI 310n = peso neto en kg, n decimales, 6 digitos.
