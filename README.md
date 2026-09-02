@@ -178,13 +178,37 @@ menú. Ahorra repetir todo esto equipo por equipo.
 
 1. El operario trabaja en el WMS. La burbuja está en el borde, atenuada.
 2. Al llegar a pesar, toca el chip **WMS** para pasarlo a **SUMA**.
-3. Escanea las etiquetas. La burbuja va marcando `34,7 kg · 3`.
+3. Escanea las etiquetas. La burbuja va marcando `34,7 kg · 3` y **vibra** en
+   cada lectura: una vibración corta confirma, dos seguidas avisan de etiqueta
+   repetida.
 4. Toca la burbuja para ver el detalle, deshacer o borrar una línea.
-5. Toca el campo del WMS para enfocarlo y luego **Insertar**.
+5. Enfoca el campo del WMS y **toca el chip SUMA para apagarlo**: eso inserta
+   el total. También sirve el botón **Insertar** del panel.
    Sin accesibilidad el botón dice **Copiar**: mantén pulsado el campo y pega.
 6. La suma se reinicia sola. **Deshacer** la recupera si te adelantaste.
 
 La burbuja se arrastra a donde estorbe menos y se imanta al borde.
+
+### Señales de la burbuja
+
+| Señal | Qué significa |
+|---|---|
+| Borde azul | Todo normal |
+| **Borde amarillo y total en amarillo** | La última etiqueta ya se había leído. Se suma igual: si son dos cajas iguales está bien, si fue un doble disparo usa **Deshacer** |
+| Chip **SUMA** encendido | Los escaneos alimentan la suma |
+| Chip **WMS** apagado | Los escaneos van al WMS |
+
+Salir de **SUMA** con etiquetas acumuladas **inserta el total**. Si la inserción
+falla porque no hay ningún campo enfocado, el modo se queda en SUMA: nadie
+pierde la cuenta por un descuido.
+
+### Apagar la burbuja
+
+En el panel, botón **Salir**. Pide **dos toques** — el primero lo pone en rojo
+preguntando *¿Seguro?* y se desarma solo a los 3 segundos. Apagar la burbuja en
+mitad de un turno sería caro, y con guantes se toca lo que no es.
+
+Para volver a encenderla: abre **Peso Total** y toca *Mostrar burbuja*.
 
 ## 5. Calibración
 

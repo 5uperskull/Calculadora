@@ -4,8 +4,12 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.PixelFormat
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -40,13 +44,19 @@ class OverlayController(
     private val modeChip: TextView = root.findViewById(R.id.modeChip)
     private val linesBox: LinearLayout = root.findViewById(R.id.lines)
     private val statusView: TextView = root.findViewById(R.id.status)
+    private val summaryView: TextView = root.findViewById(R.id.summary)
     private val btnInsert: Button = root.findViewById(R.id.btnInsert)
+    private val btnClose: Button = root.findViewById(R.id.btnClose)
+
+    /** Lo llena el servicio: apagar la burbuja es apagar el servicio. */
+    var onExit: (() -> Unit)? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private val slop = ViewConfiguration.get(ctx).scaledTouchSlop
 
     private var expanded = false
     private var shown = false
+    private var exitArmed = false
 
     // Se da de baja en hide(): el servicio se reinicia al guardar ajustes y sin
     // esto quedarian listeners apuntando a vistas ya retiradas.
@@ -65,6 +75,7 @@ class OverlayController(
     }
 
     private val dim = Runnable { root.alpha = dimmedAlpha() }
+    private val disarmExitLater = Runnable { disarmExit() }
     private val autoCollapse = Runnable { collapse() }
 
     // ---------------------------------------------------------------- ciclo
@@ -88,10 +99,32 @@ class OverlayController(
         shown = false
     }
 
-    /** Un escaneo aceptado: se ilumina y dice cuanto entro. */
+    /** Un escaneo aceptado: se ilumina, avisa cuanto entro y vibra. */
     fun onScanAdded(kg: Double) {
-        status("+ " + WeightParser.format(kg, settings.comma) + " kg")
+        val duplicate = tally.snapshot().lastOrNull()?.duplicate == true
+        status(
+            if (duplicate) ctx.getString(R.string.duplicado)
+            else "+ " + WeightParser.format(kg, settings.comma) + " kg"
+        )
+        buzz(twice = duplicate)
         wake()
+    }
+
+    /**
+     * Con guantes y ruido de camara de frio la pantalla no basta: una vibracion
+     * corta confirma, dos seguidas avisan de etiqueta repetida.
+     */
+    private fun buzz(twice: Boolean) {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager)
+                .defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            ctx.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+        if (!vibrator.hasVibrator()) return
+        val pattern = if (twice) longArrayOf(0, 45, 90, 45) else longArrayOf(0, 30)
+        vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
     }
 
     /** Llego el intent pero ningun extra traia el codigo: decir cuales venian. */
@@ -123,12 +156,21 @@ class OverlayController(
             tally.reset()
             wake()
         }
-        root.findViewById<Button>(R.id.btnClose).setOnClickListener { collapse() }
+        btnClose.setOnClickListener { if (exitArmed) onExit?.invoke() else armExit() }
     }
 
     private fun render() {
-        totalView.text = WeightParser.format(tally.total, settings.comma) + " kg"
+        val total = WeightParser.format(tally.total, settings.comma)
+        totalView.text = "$total kg"
         countView.text = tally.count.toString()
+        summaryView.text = ctx.getString(R.string.resumen, tally.count, total)
+
+        // La ultima etiqueta repetida marca la pastilla: se ve sin desplegar nada.
+        val duplicate = tally.snapshot().lastOrNull()?.duplicate == true
+        pill.setBackgroundResource(
+            if (duplicate) R.drawable.bg_pill_dup else R.drawable.bg_pill
+        )
+        totalView.setTextColor(ctx.getColor(if (duplicate) R.color.amber else R.color.txt))
 
         modeChip.text = ctx.getString(if (settings.sumMode) R.string.modo_suma else R.string.modo_wms)
         modeChip.setBackgroundResource(
@@ -209,10 +251,22 @@ class OverlayController(
         wake()
     }
 
+    /**
+     * Salir de SUMA es el final natural del ciclo, asi que inserta lo acumulado
+     * en vez de pedir un toque mas. Si la insercion falla, el modo se queda en
+     * SUMA: nadie pierde la cuenta por un campo sin foco.
+     */
     private fun toggleMode() {
-        val next = !settings.sumMode
-        settings.sumMode = next
-        applyScannerMode(next)
+        if (settings.sumMode && !tally.isEmpty) {
+            insert()
+            return
+        }
+        setMode(!settings.sumMode)
+    }
+
+    private fun setMode(sum: Boolean) {
+        settings.sumMode = sum
+        applyScannerMode(sum)
         render()
         wake()
     }
@@ -252,8 +306,25 @@ class OverlayController(
 
     private fun afterInsert() {
         if (settings.resetAfterInsert) tally.reset()
-        if (settings.sumMode) toggleMode()
+        if (settings.sumMode) setMode(false)
         wake()
+    }
+
+    // Apagar la burbuja en medio de un turno seria un accidente caro, asi que
+    // pide dos toques y se desarma sola.
+    private fun armExit() {
+        exitArmed = true
+        btnClose.setText(R.string.salir_confirmar)
+        btnClose.setTextColor(ctx.getColor(R.color.coral))
+        status(ctx.getString(R.string.salir_aviso))
+        handler.removeCallbacks(disarmExitLater)
+        handler.postDelayed(disarmExitLater, EXIT_CONFIRM_MS)
+    }
+
+    private fun disarmExit() {
+        exitArmed = false
+        btnClose.setText(R.string.salir)
+        btnClose.setTextColor(ctx.getColor(R.color.dim))
     }
 
     /**
@@ -341,6 +412,7 @@ class OverlayController(
 
     private companion object {
         const val DIM_DELAY_MS = 4_000L
+        const val EXIT_CONFIRM_MS = 3_000L
         const val AUTO_COLLAPSE_MS = 12_000L
     }
 }

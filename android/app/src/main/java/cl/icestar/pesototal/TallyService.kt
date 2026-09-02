@@ -42,7 +42,10 @@ class TallyService : Service() {
         settings.sumMode = false
         restoreKeystroke()
 
-        overlay = OverlayController(this, tally, settings).also { it.show() }
+        overlay = OverlayController(this, tally, settings).also {
+            it.onExit = { stopSelf() }
+            it.show()
+        }
 
         receiver = ScanReceiver(
             onScan = { raw -> onScan(raw) },

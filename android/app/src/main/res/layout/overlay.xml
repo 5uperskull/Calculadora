@@ -59,6 +59,15 @@
         android:visibility="gone">
 
         <TextView
+            android:id="@+id/summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
+            android:textColor="@color/dim"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,16 +84,19 @@
                 android:id="@+id/lines"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
+                android:divider="@drawable/divider"
+                android:orientation="vertical"
+                android:showDividers="middle" />
         </ScrollView>
 
         <Button
             android:id="@+id/btnInsert"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_button"
-            android:textColor="@color/ice"
+            android:background="@drawable/bg_button_primary"
+            android:textColor="@color/txt"
+            android:textStyle="bold"
             android:textSize="14sp" />
 
         <LinearLayout
@@ -121,7 +133,7 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_button"
-                android:text="@string/cerrar"
+                android:text="@string/salir"
                 android:textColor="@color/dim"
                 android:textSize="12sp" />
         </LinearLayout>

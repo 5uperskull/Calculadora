@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Etiqueta repetida: borde amarillo de marca, grueso, visible de reojo. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#3A2E05" />
+    <stroke android:width="2dp" android:color="@color/amber" />
+    <corners android:radius="22dp" />
+</shape>

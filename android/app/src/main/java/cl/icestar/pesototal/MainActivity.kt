@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         s = PesoApp.instance.settings
 
         status = findViewById(R.id.status)
+        showVersion()
         action = findViewById(R.id.action)
         extra = findViewById(R.id.extra)
         offset = findViewById(R.id.offset)
@@ -86,6 +87,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refresh()
+    }
+
+    /** Sin BuildConfig: AGP 8 lo genera solo si se pide, y no vale la pena. */
+    private fun showVersion() {
+        val name = packageManager.getPackageInfo(packageName, 0).versionName ?: "?"
+        findViewById<TextView>(R.id.version).text = getString(R.string.version, name)
     }
 
     private fun fill() {
