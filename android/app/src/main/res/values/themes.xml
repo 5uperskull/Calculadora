@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PesoTotal" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="android:textColor">@color/txt</item>
+        <item name="android:textColorHint">@color/dim</item>
+    </style>
+</resources>

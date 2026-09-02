@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1014">
+<title>Peso de etiqueta</title>
+<style>
+  /* Tema único a propósito: pantalla de bodega, con guantes y contraluz.
+     Sin webfonts: la app tiene que abrir sin señal dentro de la cámara de frío. */
+  :root{
+    --bg:#0a1014; --card:#131d24; --line:#24343f; --line-hi:#35505f;
+    --txt:#e6f1f5; --dim:#7d97a4;
+    --ice:#5fd0e8; --amber:#f2b33d; --coral:#ff6b5e;
+    --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    background:var(--bg); color:var(--txt);
+    font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:10px; -webkit-text-size-adjust:100%;
+  }
+  :focus-visible{outline:2px solid var(--ice);outline-offset:2px}
+
+  #pesoPanel{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+  /* modo inyectado: el panel flota dentro de la página del WMS */
+  #pesoPanel.float{
+    position:fixed; right:10px; bottom:10px; z-index:2147483647;
+    width:min(300px,92vw); background:var(--bg); color:var(--txt);
+    padding:10px; border:1px solid var(--line-hi); border-radius:14px;
+    box-shadow:0 10px 34px rgba(0,0,0,.55);
+  }
+
+  header{display:flex;align-items:center;gap:8px}
+  h1{
+    flex:1;margin:0;font-size:13px;font-weight:600;color:var(--dim);
+    letter-spacing:.11em;text-transform:uppercase;
+  }
+  button,select{
+    background:var(--card);color:var(--txt);border:1px solid var(--line);
+    border-radius:10px;padding:9px 13px;font-size:15px;font-family:inherit;cursor:pointer;
+  }
+  button:active{background:var(--line)}
+
+  #scanInput{
+    width:100%;padding:14px;font-size:16px;font-family:var(--mono);letter-spacing:.02em;
+    background:var(--card);color:var(--txt);border:2px solid var(--line);border-radius:12px;
+  }
+  #scanInput::placeholder{color:var(--dim);font-family:inherit}
+  #scanInput:focus{outline:none;border-color:var(--ice)}
+
+  #result{
+    display:block;text-align:center;background:var(--card);
+    border:1px solid var(--line);border-left:4px solid var(--ice);
+    border-radius:14px;padding:20px 12px;
+    font-family:var(--mono);font-variant-numeric:tabular-nums;
+    font-size:clamp(42px,15vw,68px);font-weight:700;line-height:1;letter-spacing:-.02em;
+  }
+  #result.empty{color:var(--dim);font-size:38px;border-left-color:var(--line)}
+  #result.warn{border-left-color:var(--amber);color:var(--amber)}
+  #result.bad{
+    border-left-color:var(--coral);color:var(--coral);
+    font-family:inherit;font-size:21px;font-weight:600;line-height:1.35;
+  }
+  #result small{
+    display:block;margin-top:10px;font-family:inherit;font-size:14px;font-weight:500;
+    color:var(--dim);letter-spacing:0;
+  }
+  #status{margin:0;min-height:20px;text-align:center;font-size:13px;color:var(--dim)}
+  #status.ok{color:var(--ice)}
+
+  #history{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  #history li{
+    display:flex;gap:12px;align-items:baseline;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+  }
+  #history b{
+    font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;min-width:84px;
+  }
+  #history span{
+    flex:1;min-width:0;color:var(--dim);font-family:var(--mono);font-size:11px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+
+  #cfg{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px}
+  #cfg label{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+  #cfg input[type=number]{
+    width:74px;padding:7px;background:var(--bg);color:var(--txt);
+    border:1px solid var(--line);border-radius:8px;font-family:var(--mono);
+  }
+  #cfg p{color:var(--dim);font-size:12px;line-height:1.5;margin:12px 0}
+  #clipHelper{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0}
+</style>
+</head>
+<body>
+<div id="pesoPanel">
+  <header>
+    <h1>Peso de etiqueta</h1>
+    <button id="btnCfg" type="button">Ajustes</button>
+  </header>
+
+  <input id="scanInput" type="text" inputmode="text" autocomplete="off"
+         autocapitalize="off" autocorrect="off" spellcheck="false" autofocus
+         placeholder="Dispara la pistola aquí">
+
+  <output id="result" class="empty">Sin lectura</output>
+  <p id="status"></p>
+
+  <section id="cfg" hidden>
+    <label>Separador decimal
+      <select id="cfgSep">
+        <option value="coma">coma (11,5)</option>
+        <option value="punto">punto (11.5)</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="cfgAutofill"> Rellenar el campo del WMS (modo inyectado)</label>
+    <label>Recorte de respaldo: desde <input type="number" id="cfgOffset" min="1" max="80">
+      largo <input type="number" id="cfgLen" min="6" max="20"></label>
+    <p>El recorte solo entra si el código no trae el identificador GS1 310n.
+       Si un peso sale distinto al de la planilla, ajusta estos dos números.</p>
+    <button type="button" id="cfgClear">Borrar historial</button>
+  </section>
+
+  <ul id="history"></ul>
+</div>
+<textarea id="clipHelper" aria-hidden="true" tabindex="-1"></textarea>
+
+<script id="core">
+(function (global) {
+  'use strict';
+
+  var MIN_KG = 0.001, MAX_KG = 2000;
+  var DEFAULTS = { offset: 13, len: 7, sep: 'coma', autofill: true };
+
+  function clean(raw) {
+    // la pistola puede meter separadores GS (0x1d) y otros control chars
+    return String(raw == null ? '' : raw).replace(/[^\x20-\x7E]/g, '').trim();
+  }
+
+  // Via correcta: GS1 AI 310n = peso neto en kg, n decimales, 6 digitos.
+  // ponytail: el 310 podria aparecer por coincidencia dentro de otro campo
+  // numerico. Si eso pasa en terreno, anclar el AI a posicion fija.
+  function fromGs1(code) {
+    var m = /310([0-5])(\d{6})/.exec(code);
+    if (!m) return null;
+    return {
+      kg: parseInt(m[2], 10) / Math.pow(10, parseInt(m[1], 10)),
+      source: 'GS1 AI 310' + m[1]
+    };
+  }
+
+  // Respaldo: la formula original de Excel sobre un recorte de posicion fija.
+  // offset es 1-based, igual que EXTRAE/MID.
+  function fromSlice(code, offset, len) {
+    var d8 = code.substr(offset - 1, len);
+    if (!d8) return null;
+    var first = d8.charAt(0);
+    var digits = (first === '2' || first === '3') ? d8.substr(1, 6) : d8.substr(0, 6);
+    if (!/^\d{6}$/.test(digits)) return null;
+    return { kg: parseInt(digits, 10) / 1000, source: 'recorte ' + offset + '/' + len };
+  }
+
+  function parseWeight(raw, cfg) {
+    cfg = cfg || {};
+    var code = clean(raw);
+    if (!code) return { ok: false, error: 'Codigo vacio' };
+
+    var hit = fromGs1(code) ||
+              fromSlice(code, cfg.offset || DEFAULTS.offset, cfg.len || DEFAULTS.len);
+    if (!hit) return { ok: false, error: 'Sin peso en el codigo', code: code };
+
+    hit.ok = true;
+    hit.code = code;
+    hit.warn = (hit.kg < MIN_KG || hit.kg > MAX_KG)
+      ? 'Fuera de rango (' + MIN_KG + ' a ' + MAX_KG + ' kg)'
+      : null;
+    return hit;
+  }
+
+  function format(kg, sep) {
+    var s = String(Math.round(kg * 1000) / 1000);
+    return sep === 'punto' ? s : s.replace('.', ',');
+  }
+
+  global.PesoCore = {
+    parseWeight: parseWeight, format: format, clean: clean,
+    DEFAULTS: DEFAULTS, MIN_KG: MIN_KG, MAX_KG: MAX_KG
+  };
+
+  if (typeof document === 'undefined') return;   // corriendo bajo Node (test.js)
+
+  // ---------- estado ----------
+  var CFG_KEY = 'pesoCfg', HIST_KEY = 'pesoHist';
+
+  function copyOf(v) { return Array.isArray(v) ? v.slice() : JSON.parse(JSON.stringify(v)); }
+  function load(key, fallback) {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return copyOf(fallback);
+      var val = JSON.parse(raw);
+      if (Array.isArray(fallback)) return Array.isArray(val) ? val : [];
+      var out = copyOf(fallback);
+      for (var k in val) if (k in out) out[k] = val[k];
+      return out;
+    } catch (e) { return copyOf(fallback); }
+  }
+  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+  var cfg = load(CFG_KEY, DEFAULTS);
+  var hist = load(HIST_KEY, []);
+
+  var $ = function (id) { return document.getElementById(id); };
+  var input = $('scanInput'), result = $('result'), status = $('status'),
+      histEl = $('history'), panel = $('pesoPanel'), cfgBox = $('cfg');
+
+  // ---------- portapapeles ----------
+  // execCommand va primero: es sincrono, asi que corre dentro del gesto del
+  // usuario y funciona en file:// y dentro de un iframe, donde la API async
+  // del portapapeles suele quedar sin permiso.
+  function legacyCopy(text) {
+    var ta = $('clipHelper');
+    if (!ta) return false;
+    ta.value = text; ta.select(); ta.setSelectionRange(0, 99999);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    input.focus();
+    return ok;
+  }
+  function copyText(text) {
+    if (legacyCopy(text)) return Promise.resolve(true);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(
+        function () { return true; },
+        function () { return false; }
+      );
+    }
+    return Promise.resolve(false);
+  }
+
+  // ---------- rellenar el campo del WMS (solo en modo inyectado) ----------
+  function fillTarget(value) {
+    var el = document.getElementById('txtPrompt');
+    if (!el || !cfg.autofill) return false;
+
+    // poner .value directo no siempre lo registra el framework: setter nativo
+    var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    setter.call(el, value);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+
+    // el handler del WMS lee event.keyCode, read-only en el constructor
+    var ev = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter' });
+    Object.defineProperty(ev, 'keyCode', { get: function () { return 13; } });
+    Object.defineProperty(ev, 'which', { get: function () { return 13; } });
+    el.dispatchEvent(ev);
+    return true;
+  }
+
+  // ---------- procesar un escaneo ----------
+  var lastRaw = '';
+
+  function process(raw) {
+    var r = parseWeight(raw, cfg);
+    result.className = '';
+
+    if (!r.ok) {
+      result.className = 'bad';
+      result.textContent = r.error;
+      status.className = '';
+      status.textContent = r.code || '';
+      return;
+    }
+
+    var txt = format(r.kg, cfg.sep);
+    result.textContent = txt + ' kg';
+    var small = document.createElement('small');
+    small.textContent = r.source + (r.warn ? ' · ' + r.warn : '');
+    result.appendChild(small);
+    if (r.warn) result.className = 'warn';
+
+    var filled = fillTarget(txt);
+    copyText(txt).then(function (ok) {
+      status.className = (ok || filled) ? 'ok' : '';
+      status.textContent = filled ? 'Copiado y puesto en el WMS'
+                         : ok      ? 'Copiado: ' + txt + ' – pégalo en el campo'
+                                   : 'No se pudo copiar, escríbelo a mano';
+    });
+
+    hist.unshift({ kg: r.kg, code: r.code });
+    hist = hist.slice(0, 10);
+    save(HIST_KEY, hist);
+    renderHist();
+  }
+
+  function renderHist() {
+    histEl.textContent = '';
+    hist.forEach(function (h) {
+      var txt = format(h.kg, cfg.sep);
+      var li = document.createElement('li');
+      var b = document.createElement('b'); b.textContent = txt + ' kg';
+      var s = document.createElement('span'); s.textContent = h.code;
+      li.appendChild(b); li.appendChild(s);
+      li.addEventListener('click', function () {
+        copyText(txt).then(function (ok) {
+          status.className = ok ? 'ok' : '';
+          status.textContent = ok ? 'Copiado de nuevo: ' + txt : 'No se pudo copiar';
+        });
+      });
+      histEl.appendChild(li);
+    });
+  }
+
+  // ---------- entrada ----------
+  // La pistola normalmente manda Enter al final. Si el sufijo CR viene
+  // desactivado, el temporizador de reposo lo procesa igual.
+  var idle = null;
+  input.addEventListener('input', function () {
+    clearTimeout(idle);
+    idle = setTimeout(function () {
+      var v = input.value.trim();
+      if (v.length >= 8 && v !== lastRaw) { lastRaw = v; process(v); input.select(); }
+    }, 250);
+  });
+  input.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    clearTimeout(idle);
+    lastRaw = input.value.trim();
+    if (lastRaw) { process(lastRaw); input.select(); }
+  });
+  input.addEventListener('blur', function () {
+    setTimeout(function () { input.focus(); }, 0);
+  });
+
+  // ---------- ajustes ----------
+  $('btnCfg').addEventListener('click', function () {
+    cfgBox.hidden = !cfgBox.hidden;
+    if (cfgBox.hidden) return;
+    $('cfgSep').value = cfg.sep;
+    $('cfgAutofill').checked = !!cfg.autofill;
+    $('cfgOffset').value = cfg.offset;
+    $('cfgLen').value = cfg.len;
+  });
+  cfgBox.addEventListener('change', function () {
+    cfg.sep = $('cfgSep').value;
+    cfg.autofill = $('cfgAutofill').checked;
+    cfg.offset = parseInt($('cfgOffset').value, 10) || DEFAULTS.offset;
+    cfg.len = parseInt($('cfgLen').value, 10) || DEFAULTS.len;
+    save(CFG_KEY, cfg);
+    renderHist();
+  });
+  $('cfgClear').addEventListener('click', function () {
+    hist = []; save(HIST_KEY, hist); renderHist();
+  });
+
+  // ---------- arranque ----------
+  if (document.getElementById('txtPrompt')) panel.className = 'float';
+  renderHist();
+  input.focus();
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+</body>
+</html>

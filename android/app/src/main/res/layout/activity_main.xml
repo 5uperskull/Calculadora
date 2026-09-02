@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/txt"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_field"
+            android:fontFamily="monospace"
+            android:padding="10dp"
+            android:textColor="@color/dim"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button"
+            android:text="Permiso: mostrar sobre otras apps"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnAccess"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_button"
+            android:text="Activar accesibilidad (para insertar solo)"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnStart"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_button"
+                android:text="Mostrar burbuja"
+                android:textColor="@color/ice"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnStop"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_button"
+                android:text="Ocultar"
+                android:textColor="@color/dim"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="LECTOR"
+            android:textColor="@color/dim"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/action"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_field"
+            android:hint="Acción del intent"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <EditText
+            android:id="@+id/extra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_field"
+            android:hint="Nombre del extra"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnZebra"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_button"
+                android:text="Preset Zebra"
+                android:textColor="@color/txt"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btnHoneywell"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_button"
+                android:text="Preset Honeywell"
+                android:textColor="@color/txt"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="PERFILES DATAWEDGE"
+            android:textColor="@color/dim"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/profileWms"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_field"
+                android:hint="Perfil WMS"
+                android:inputType="text"
+                android:padding="10dp"
+                android:textColor="@color/txt"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/profileSum"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_field"
+                android:hint="Perfil SUMA"
+                android:inputType="text"
+                android:padding="10dp"
+                android:textColor="@color/txt"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/useProfiles"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Cambiar de perfil al tocar el interruptor (verifícalo antes: si falla, el WMS deja de recibir escaneos)"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="CALIBRACIÓN Y APARIENCIA"
+            android:textColor="@color/dim"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/offset"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_field"
+                android:hint="Recorte desde"
+                android:inputType="number"
+                android:padding="10dp"
+                android:textColor="@color/txt"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/len"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_field"
+                android:hint="Largo"
+                android:inputType="number"
+                android:padding="10dp"
+                android:textColor="@color/txt"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/alpha"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_field"
+                android:hint="Opacidad %"
+                android:inputType="number"
+                android:padding="10dp"
+                android:textColor="@color/txt"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/comma"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Separador decimal coma (11,5)"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/resetAfter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reiniciar la suma después de insertar"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/edgeBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Modo barra de borde (más discreto)"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_button"
+            android:text="Guardar y reiniciar burbuja"
+            android:textColor="@color/ice"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="PRUEBA"
+            android:textColor="@color/dim"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/test"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_field"
+            android:fontFamily="monospace"
+            android:hint="Dispara la pistola aquí o pega un código"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnTest"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_button"
+            android:text="Probar el código"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/testResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp"
+            android:fontFamily="monospace"
+            android:textColor="@color/ice"
+            android:textSize="16sp" />
+    </LinearLayout>
+</ScrollView>

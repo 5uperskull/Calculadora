@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peso Total</string>
+
+    <string name="insertar">Insertar</string>
+    <string name="copiar">Copiar</string>
+    <string name="deshacer">Deshacer</string>
+    <string name="reiniciar">Reiniciar</string>
+    <string name="cerrar">Cerrar</string>
+
+    <string name="modo_wms">WMS</string>
+    <string name="modo_suma">SUMA</string>
+    <string name="modo_wms_largo">El escaneo va al WMS</string>
+    <string name="modo_suma_largo">El escaneo alimenta la suma</string>
+
+    <string name="sin_peso">Sin peso en el código: %1$s</string>
+    <string name="sin_lineas">Todavía no hay etiquetas</string>
+    <string name="nada_que_deshacer">Nada que deshacer</string>
+    <string name="nada_que_insertar">Nada que insertar</string>
+    <string name="insertado">Insertado %1$s</string>
+    <string name="copiado">Copiado %1$s — mantén pulsado el campo y pega</string>
+    <string name="no_se_pudo_copiar">No se pudo copiar</string>
+    <string name="sin_datawedge">Sin DataWedge: el código seguirá llegando al WMS</string>
+
+    <string name="canal_burbuja">Burbuja de peso</string>
+    <string name="notif_total">%1$s kg · %2$d etiquetas</string>
+
+    <string name="guardado">Guardado</string>
+    <string name="falta_overlay">Falta el permiso para mostrar sobre otras apps</string>
+    <string name="si">sí</string>
+    <string name="no">NO</string>
+    <string name="st_overlay">Permiso de superposición: %1$s</string>
+    <string name="st_accesibilidad">Accesibilidad activa: %1$s</string>
+    <string name="st_datawedge">DataWedge presente: %1$s</string>
+
+    <string name="accessibility_description">Escribe el total acumulado en el campo de texto que tengas enfocado. No lee ni guarda el contenido de otras aplicaciones.</string>
+</resources>
