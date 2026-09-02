@@ -94,6 +94,16 @@ class OverlayController(
         wake()
     }
 
+    /** Llego el intent pero ningun extra traia el codigo: decir cuales venian. */
+    fun onUnknownIntent(keys: List<String>) {
+        settings.lastIntentKeys = keys.joinToString(", ")
+        val msg =
+            if (keys.isEmpty()) ctx.getString(R.string.intent_sin_extras)
+            else ctx.getString(R.string.intent_extras, keys.joinToString(", "))
+        Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
+        wake()
+    }
+
     fun onScanRejected(code: String) {
         Toast.makeText(ctx, ctx.getString(R.string.sin_peso, code), Toast.LENGTH_SHORT).show()
         wake()

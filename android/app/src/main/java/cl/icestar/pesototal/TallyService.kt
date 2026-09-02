@@ -39,12 +39,18 @@ class TallyService : Service() {
 
         overlay = OverlayController(this, tally, settings).also { it.show() }
 
-        receiver = ScanReceiver { raw -> onScan(raw) }
+        receiver = ScanReceiver(
+            onScan = { raw -> onScan(raw) },
+            onUnknown = { keys -> overlay?.onUnknownIntent(keys) }
+        )
+        // La categoria DEFAULT va a proposito: si DataWedge la pone en el
+        // intent y el filtro no la tiene, el broadcast no llega nunca. Que al
+        // filtro le sobre una categoria no estorba; que le falte, si.
+        val filter = IntentFilter(settings.scanAction).apply {
+            addCategory(Intent.CATEGORY_DEFAULT)
+        }
         ContextCompat.registerReceiver(
-            this,
-            receiver,
-            IntentFilter(settings.scanAction),
-            ContextCompat.RECEIVER_EXPORTED
+            this, receiver, filter, ContextCompat.RECEIVER_EXPORTED
         )
 
         changeListener = tally.onChange { updateNotification() }

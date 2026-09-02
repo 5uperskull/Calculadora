@@ -163,7 +163,11 @@ class MainActivity : AppCompatActivity() {
                 R.string.st_accesibilidad,
                 if (InsertAccessibilityService.isRunning) yes else no
             ),
-            getString(R.string.st_datawedge, if (DataWedge.isAvailable(this)) yes else no)
+            getString(R.string.st_datawedge, if (DataWedge.isAvailable(this)) yes else no),
+            getString(
+                R.string.st_ultimo_intent,
+                s.lastIntentKeys.ifEmpty { getString(R.string.ninguno) }
+            )
         ).joinToString("\n")
     }
 }

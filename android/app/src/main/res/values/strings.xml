@@ -32,6 +32,10 @@
     <string name="st_overlay">Permiso de superposición: %1$s</string>
     <string name="st_accesibilidad">Accesibilidad activa: %1$s</string>
     <string name="st_datawedge">DataWedge presente: %1$s</string>
+    <string name="st_ultimo_intent">Extras del último intent: %1$s</string>
+    <string name="ninguno">ninguno todavía</string>
+    <string name="intent_extras">Intent recibido pero sin código. Extras: %1$s</string>
+    <string name="intent_sin_extras">Intent recibido sin ningún extra</string>
 
     <string name="accessibility_description">Escribe el total acumulado en el campo de texto que tengas enfocado. No lee ni guarda el contenido de otras aplicaciones.</string>
 </resources>

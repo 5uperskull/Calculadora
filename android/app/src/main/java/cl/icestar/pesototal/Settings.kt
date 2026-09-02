@@ -75,6 +75,11 @@ class Settings(ctx: Context) {
         get() = p.getBoolean("resetAfterInsert", true)
         set(v) = put("resetAfterInsert", v)
 
+    /** Claves del ultimo intent recibido. Solo para diagnosticar en Ajustes. */
+    var lastIntentKeys: String
+        get() = str("lastIntentKeys", "")
+        set(v) = put("lastIntentKeys", v)
+
     var bubbleX: Int
         get() = p.getInt("bubbleX", 0)
         set(v) = put("bubbleX", v)
