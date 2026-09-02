@@ -40,6 +40,11 @@ class Settings(ctx: Context) {
         get() = p.getBoolean("comma", true)
         set(v) = put("comma", v)
 
+    /** Aviso hablado en duplicados y errores de lectura. */
+    var sound: Boolean
+        get() = p.getBoolean("sound", true)
+        set(v) = put("sound", v)
+
     /** Opacidad de la burbuja, en porcentaje. */
     var alpha: Int
         get() = p.getInt("alpha", 75)

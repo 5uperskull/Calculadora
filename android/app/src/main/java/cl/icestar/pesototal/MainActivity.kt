@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var comma: CheckBox
     private lateinit var resetAfter: CheckBox
     private lateinit var edgeBar: CheckBox
+    private lateinit var sound: CheckBox
     private lateinit var cutKeystroke: CheckBox
     private lateinit var test: EditText
     private lateinit var testResult: TextView
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         comma = findViewById(R.id.comma)
         resetAfter = findViewById(R.id.resetAfter)
         edgeBar = findViewById(R.id.edgeBar)
+        sound = findViewById(R.id.sound)
         cutKeystroke = findViewById(R.id.cutKeystroke)
         test = findViewById(R.id.test)
         testResult = findViewById(R.id.testResult)
@@ -79,6 +81,13 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btnSave).setOnClickListener { save() }
         findViewById<Button>(R.id.btnTest).setOnClickListener { runTest() }
+        findViewById<Button>(R.id.btnTestVoice).setOnClickListener {
+            // Arranca el motor aunque la burbuja este apagada: probar la voz es
+            // justo lo que se hace antes de desplegar.
+            Voice.start(this)
+            Voice.say(getString(R.string.voz_prueba))
+            status.postDelayed({ refresh() }, 1500)
+        }
 
         askNotifications()
         fill()
@@ -87,6 +96,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refresh()
+    }
+
+    override fun onDestroy() {
+        // Si la burbuja no esta corriendo, el motor de voz lo abrio esta
+        // pantalla al probarlo y no lo cerraria nadie mas.
+        if (!TallyService.isRunning) Voice.stop()
+        super.onDestroy()
     }
 
     /** Sin BuildConfig: AGP 8 lo genera solo si se pide, y no vale la pena. */
@@ -105,6 +121,7 @@ class MainActivity : AppCompatActivity() {
         comma.isChecked = s.comma
         resetAfter.isChecked = s.resetAfterInsert
         edgeBar.isChecked = s.edgeBar
+        sound.isChecked = s.sound
         cutKeystroke.isChecked = s.cutKeystroke
     }
 
@@ -118,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         s.comma = comma.isChecked
         s.resetAfterInsert = resetAfter.isChecked
         s.edgeBar = edgeBar.isChecked
+        s.sound = sound.isChecked
         s.cutKeystroke = cutKeystroke.isChecked
         fill()
 
@@ -167,6 +185,8 @@ class MainActivity : AppCompatActivity() {
                 if (InsertAccessibilityService.isRunning) yes else no
             ),
             getString(R.string.st_datawedge, if (DataWedge.isAvailable(this)) yes else no),
+            getString(R.string.st_burbuja, if (TallyService.isRunning) yes else no),
+            getString(R.string.st_voz, if (Voice.isReady) yes else no),
             getString(
                 R.string.st_ultimo_intent,
                 s.lastIntentKeys.ifEmpty { getString(R.string.ninguno) }

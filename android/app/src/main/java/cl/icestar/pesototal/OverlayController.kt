@@ -107,6 +107,7 @@ class OverlayController(
             else "+ " + WeightParser.format(kg, settings.comma) + " kg"
         )
         buzz(twice = duplicate)
+        if (duplicate && settings.sound) Voice.say(ctx.getString(R.string.voz_duplicado))
         wake()
     }
 
@@ -139,6 +140,8 @@ class OverlayController(
 
     fun onScanRejected(code: String) {
         Toast.makeText(ctx, ctx.getString(R.string.sin_peso, code), Toast.LENGTH_SHORT).show()
+        buzz(twice = true)
+        if (settings.sound) Voice.say(ctx.getString(R.string.voz_sin_peso))
         wake()
     }
 

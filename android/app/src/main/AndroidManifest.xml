@@ -9,6 +9,9 @@
     <!-- Necesario desde Android 11 para poder consultar si DataWedge existe. -->
     <queries>
         <package android:name="com.symbol.datawedge" />
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 
     <application

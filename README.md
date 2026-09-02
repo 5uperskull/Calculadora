@@ -180,7 +180,8 @@ menú. Ahorra repetir todo esto equipo por equipo.
 2. Al llegar a pesar, toca el chip **WMS** para pasarlo a **SUMA**.
 3. Escanea las etiquetas. La burbuja va marcando `34,7 kg · 3` y **vibra** en
    cada lectura: una vibración corta confirma, dos seguidas avisan de etiqueta
-   repetida.
+   repetida. Además **lo dice en voz alta**: *"Duplicado"* si la etiqueta ya se
+   había leído, *"Sin peso"* si el código no trae peso.
 4. Toca la burbuja para ver el detalle, deshacer o borrar una línea.
 5. Enfoca el campo del WMS y **toca el chip SUMA para apagarlo**: eso inserta
    el total. También sirve el botón **Insertar** del panel.
@@ -218,6 +219,10 @@ Para volver a encenderla: abre **Peso Total** y toca *Mostrar burbuja*.
 - **Separador decimal:** coma por defecto. Si el WMS rechaza el valor, cámbialo
   a punto.
 - **Opacidad y modo barra de borde:** para que estorbe menos.
+- **Aviso hablado:** encendido por defecto. Dice *"Duplicado"* y *"Sin peso"*
+  por el canal de notificaciones. Si el terminal no trae motor de voz o le falta
+  el español, cae a un pitido — compruébalo con **Probar la voz** antes de
+  desplegar, y mira la línea *Voz disponible* del estado.
 - **Cortar la salida de teclado en modo SUMA:** apagado por defecto. Enciéndelo
   cuando el operario necesite escanear con el cursor dentro del textbox del WMS
   sin que el código se escriba ahí. Requiere que el *Nombre del perfil asociado
@@ -235,6 +240,8 @@ Para volver a encenderla: abre **Peso Total** y toca *Mostrar burbuja*.
 | "Sin peso en el código" | La etiqueta no trae `310n` y el recorte no calza |
 | El botón dice *Copiar* | La accesibilidad no está activa (o la bloqueó el MDM) |
 | El total entra mal en el WMS | Coma vs punto |
+| No habla, solo pita | El terminal no tiene motor de voz o le falta el español. Instala Google TTS y su voz en español, o quédate con el pitido |
+| No se oye nada | Volumen de notificaciones al mínimo, o el aviso hablado está desmarcado |
 
 ## Banco de pruebas
 

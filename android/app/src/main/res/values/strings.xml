@@ -11,6 +11,11 @@
     <string name="salir_confirmar">¿Seguro?</string>
     <string name="salir_aviso">Toca otra vez para apagar la burbuja</string>
     <string name="duplicado">Etiqueta repetida</string>
+    <string name="voz_duplicado">Duplicado</string>
+    <string name="voz_sin_peso">Sin peso</string>
+    <string name="voz_prueba">Duplicado. Voz lista.</string>
+    <string name="st_voz">Voz disponible: %1$s</string>
+    <string name="st_burbuja">Burbuja activa: %1$s</string>
     <string name="resumen">%1$d etiquetas · %2$s kg</string>
     <string name="version">Versión %1$s</string>
 

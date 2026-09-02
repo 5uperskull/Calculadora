@@ -31,9 +31,11 @@ class TallyService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
         settings = PesoApp.instance.settings
         tally = PesoApp.instance.tally
 
+        Voice.start(this)
         createChannel()
         startForeground(NOTIF_ID, buildNotification())
 
@@ -67,6 +69,8 @@ class TallyService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onDestroy() {
+        isRunning = false
+        Voice.stop()
         restoreKeystroke()
         changeListener?.let { tally.removeChange(it) }
         changeListener = null
@@ -136,6 +140,11 @@ class TallyService : Service() {
     companion object {
         private const val CHANNEL = "burbuja"
         private const val NOTIF_ID = 1
+
+        /** Lo consulta la pantalla de ajustes; no hay forma barata de saberlo si no. */
+        @Volatile
+        var isRunning = false
+            private set
 
         fun start(ctx: Context) {
             ctx.startForegroundService(Intent(ctx, TallyService::class.java))
