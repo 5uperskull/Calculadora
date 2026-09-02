@@ -87,49 +87,61 @@ nunca mientras el operario usa el WMS.
 > Editar Profile0 afecta a todas las apps del terminal. Es aceptable aquí
 > porque solo vamos a **añadir** una salida, sin quitar la que ya existe.
 
-### Configuración A — la recomendada, no puede romper nada
+### Configuración: un solo perfil
 
-El WMS sigue recibiendo el código exactamente como hoy, y nosotros recibimos
-una copia. Las dos salidas conviven.
+**Borra o desactiva el perfil `SUMA`.** No sirve, y ahora explico por qué.
 
-Dentro del perfil que identificaste:
+DataWedge elige el perfil según la app que está en primer plano. Un perfil sin
+aplicación asociada **nunca se activa solo** — por eso, dejando activo solo
+`SUMA`, el escáner no responde dentro del WMS. Y `SWITCH_TO_PROFILE`, la API
+que cambia de perfil, está pensada para que la llame la app que está al frente;
+la nuestra vive detrás del WMS, así que DataWedge revierte al perfil del WMS.
+
+Con los dos perfiles activos el que manda es el del WMS, que tiene la salida de
+teclado encendida: de ahí que el código llegue a los dos sitios.
+
+La app no cambia de perfil. **Le apaga y le enciende la salida de teclado al
+perfil del WMS**, que es la opción que decide si el código se escribe en el
+campo. Eso sí funciona desde segundo plano, porque no toca cuál perfil está
+activo, solo reescribe una opción del que ya lo está.
+
+Configura un único perfil, el asociado a la app del WMS:
 
 1. **Perfil habilitado** → activado.
-2. **Entrada de código de barras** → activada (ya lo estará).
-3. **Salida de pulsación de teclas** → **déjala activada**. Es la que teclea el
-   código en el campo del WMS. Si la apagas aquí, rompes el flujo actual.
-4. **Salida de intents** → **actívala**, y dentro:
+2. **Entrada de código de barras** → activada.
+3. **Salida de pulsación de teclas** → **activada**. La app la apagará y
+   encenderá según el modo; este es su estado de reposo.
+4. **Salida de intents** → **activada, y se queda activada siempre**:
    - **Acción del intent**: `cl.icestar.pesototal.SCAN`
-     (exactamente igual que en la app, campo *Acción del intent* de Ajustes)
-   - **Categoría del intent**: **déjala vacía**
+   - **Categoría del intent**: vacía
    - **Entrega del intent**: **Emitir intent**
-5. Sal del perfil. DataWedge guarda solo, no hay botón de guardar.
 
-En la app: campo *Nombre del extra* → botón **Preset Zebra**
-(`com.symbol.datawedge.data_string`) → **Guardar y reiniciar burbuja**.
+En la app:
 
-Con esta configuración el interruptor de la burbuja **no** corta el código al
-WMS: solo decide si sumamos o no. Es a propósito — es lo único que no puede
-dejar al operario sin poder trabajar.
+1. Campo *Nombre del perfil asociado al WMS*: escribe el nombre **exacto** del
+   perfil, tal como aparece en la lista de DataWedge. Si no calza, el corte no
+   hace nada.
+2. Marca **En modo SUMA, cortar la salida de teclado del lector**.
+3. **Guardar y reiniciar burbuja**.
 
-### Configuración B — dos perfiles, para que el interruptor corte de verdad
+Ahora el operario puede dejar el cursor dentro del textbox del WMS: en modo
+**SUMA** el código no se escribe ahí y solo alimenta la suma; en **WMS** vuelve
+a escribirse como siempre.
 
-Solo si necesitas que en modo SUMA el código **no** llegue al campo del WMS.
-Requiere que el cambio de perfil en caliente funcione en tu terminal, y eso no
-está garantizado cuando lo pide una app en segundo plano.
+### Si el terminal no acepta el corte
 
-1. Deja el perfil de la Configuración A tal cual, y ponle nombre `WMS`.
-2. Menú ⋮ → **Nuevo perfil** → nómbralo `SUMA`.
-3. En `SUMA`: **no le asocies ninguna aplicación** (tiene que quedar libre, es
-   requisito de la API que lo activa).
-4. En `SUMA`: **Entrada de código de barras** activada, **Salida de pulsación
-   de teclas DESACTIVADA**, **Salida de intents** igual que en A (misma acción,
-   misma entrega `Emitir intent`).
-5. En la app: marca *Cambiar de perfil al tocar el interruptor* y guarda.
-6. **Pruébalo antes de dárselo a un operario:** toca el interruptor a SUMA,
-   escanea, y confirma que el código no aparece en el campo del WMS. Después
-   vuelve a WMS y confirma que sí aparece. Si el segundo paso falla, desmarca
-   la casilla y quédate con la Configuración A.
+DataWedge no contesta si aceptó el cambio, así que la app no puede confirmarlo.
+Lo ves al primer escaneo: si en modo SUMA el código igual se escribe en el
+campo, ese terminal no acepta `SET_CONFIG`. Desmarca la casilla y trabaja con
+las dos salidas encendidas — se suma bien, pero hay que limpiar el campo del
+WMS a mano.
+
+Dos protecciones para que el corte no deje a nadie tirado:
+
+- Al arrancar, la app **siempre** vuelve al modo WMS y enciende el teclado.
+- Al ocultar la burbuja o al morir el servicio, restaura el teclado.
+
+Así, si el proceso muere en modo SUMA, el WMS no queda sin poder escanear.
 
 ### Tercero: el formato de los datos
 
@@ -182,10 +194,10 @@ La burbuja se arrastra a donde estorbe menos y se imanta al borde.
 - **Separador decimal:** coma por defecto. Si el WMS rechaza el valor, cámbialo
   a punto.
 - **Opacidad y modo barra de borde:** para que estorbe menos.
-- **Cambiar de perfil al tocar el interruptor:** apagado por defecto. Enciéndelo
-  solo si creaste dos perfiles de DataWedge (`WMS` con teclado + intent, `SUMA`
-  con intent solo) **y verificaste que el cambio en caliente funciona en ese
-  terminal**. Si falla, el WMS se queda sin escaneos.
+- **Cortar la salida de teclado en modo SUMA:** apagado por defecto. Enciéndelo
+  cuando el operario necesite escanear con el cursor dentro del textbox del WMS
+  sin que el código se escriba ahí. Requiere que el *Nombre del perfil asociado
+  al WMS* sea exacto. Ver la sección 3.
 
 ## 6. Si algo falla
 
@@ -193,6 +205,7 @@ La burbuja se arrastra a donde estorbe menos y se imanta al borde.
 |---|---|
 | La burbuja no aparece | Falta el permiso de superposición, o el servicio se detuvo |
 | Escaneo sin efecto | El intent no está configurado, o el chip está en **WMS** |
+| En SUMA el código igual se escribe en el WMS | El nombre del perfil no calza, o el terminal no acepta `SET_CONFIG` |
 | Aviso "Intent recibido pero sin código" | El extra tiene otro nombre: cópialo del aviso al campo *Nombre del extra* |
 | Funcionaba y dejó de funcionar | La burbuja se ocultó, o el servicio murió: vuelve a abrir la app y toca *Mostrar burbuja* |
 | "Sin peso en el código" | La etiqueta no trae `310n` y el recorte no calza |

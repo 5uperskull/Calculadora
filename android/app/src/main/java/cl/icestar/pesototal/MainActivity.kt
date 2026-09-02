@@ -28,11 +28,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var len: EditText
     private lateinit var alpha: EditText
     private lateinit var profileWms: EditText
-    private lateinit var profileSum: EditText
     private lateinit var comma: CheckBox
     private lateinit var resetAfter: CheckBox
     private lateinit var edgeBar: CheckBox
-    private lateinit var useProfiles: CheckBox
+    private lateinit var cutKeystroke: CheckBox
     private lateinit var test: EditText
     private lateinit var testResult: TextView
 
@@ -48,11 +47,10 @@ class MainActivity : AppCompatActivity() {
         len = findViewById(R.id.len)
         alpha = findViewById(R.id.alpha)
         profileWms = findViewById(R.id.profileWms)
-        profileSum = findViewById(R.id.profileSum)
         comma = findViewById(R.id.comma)
         resetAfter = findViewById(R.id.resetAfter)
         edgeBar = findViewById(R.id.edgeBar)
-        useProfiles = findViewById(R.id.useProfiles)
+        cutKeystroke = findViewById(R.id.cutKeystroke)
         test = findViewById(R.id.test)
         testResult = findViewById(R.id.testResult)
 
@@ -97,11 +95,10 @@ class MainActivity : AppCompatActivity() {
         len.setText(s.len.toString())
         alpha.setText(s.alpha.toString())
         profileWms.setText(s.profileWms)
-        profileSum.setText(s.profileSum)
         comma.isChecked = s.comma
         resetAfter.isChecked = s.resetAfterInsert
         edgeBar.isChecked = s.edgeBar
-        useProfiles.isChecked = s.useProfiles
+        cutKeystroke.isChecked = s.cutKeystroke
     }
 
     private fun save() {
@@ -111,11 +108,10 @@ class MainActivity : AppCompatActivity() {
         s.len = len.text.toString().toIntOrNull() ?: WeightParser.DEFAULT_LEN
         s.alpha = alpha.text.toString().toIntOrNull() ?: 75
         s.profileWms = profileWms.text.toString().trim().ifEmpty { "WMS" }
-        s.profileSum = profileSum.text.toString().trim().ifEmpty { "SUMA" }
         s.comma = comma.isChecked
         s.resetAfterInsert = resetAfter.isChecked
         s.edgeBar = edgeBar.isChecked
-        s.useProfiles = useProfiles.isChecked
+        s.cutKeystroke = cutKeystroke.isChecked
         fill()
 
         // La accion del intent solo se lee al registrar el receiver.

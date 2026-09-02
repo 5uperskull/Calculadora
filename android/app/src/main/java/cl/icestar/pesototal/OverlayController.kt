@@ -212,14 +212,20 @@ class OverlayController(
     private fun toggleMode() {
         val next = !settings.sumMode
         settings.sumMode = next
-        if (settings.useProfiles) {
-            val profile = if (next) settings.profileSum else settings.profileWms
-            if (!DataWedge.switchProfile(ctx, profile)) {
-                status(ctx.getString(R.string.sin_datawedge))
-            }
-        }
+        applyScannerMode(next)
         render()
         wake()
+    }
+
+    /**
+     * En SUMA se le apaga el teclado al lector: el operario deja el cursor en
+     * el textbox del WMS y el codigo no se escribe ahi, solo nos llega.
+     */
+    private fun applyScannerMode(sumMode: Boolean) {
+        if (!settings.cutKeystroke) return
+        if (!DataWedge.setKeystrokeOutput(ctx, settings.profileWms, !sumMode)) {
+            status(ctx.getString(R.string.sin_datawedge))
+        }
     }
 
     private fun insert() {

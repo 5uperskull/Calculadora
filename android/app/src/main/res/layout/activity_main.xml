@@ -142,7 +142,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="PERFILES DATAWEDGE"
+            android:text="PERFIL DE DATAWEDGE"
             android:textColor="@color/dim"
             android:textSize="12sp"
             android:textStyle="bold" />
@@ -159,32 +159,20 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/bg_field"
-                android:hint="Perfil WMS"
+                android:hint="Nombre del perfil asociado al WMS"
                 android:inputType="text"
                 android:padding="10dp"
                 android:textColor="@color/txt"
                 android:textSize="13sp" />
 
-            <EditText
-                android:id="@+id/profileSum"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_field"
-                android:hint="Perfil SUMA"
-                android:inputType="text"
-                android:padding="10dp"
-                android:textColor="@color/txt"
-                android:textSize="13sp" />
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/useProfiles"
+            android:id="@+id/cutKeystroke"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Cambiar de perfil al tocar el interruptor (verifícalo antes: si falla, el WMS deja de recibir escaneos)"
+            android:text="En modo SUMA, cortar la salida de teclado del lector (así el código no se escribe en el textbox del WMS)"
             android:textColor="@color/txt"
             android:textSize="13sp" />
 

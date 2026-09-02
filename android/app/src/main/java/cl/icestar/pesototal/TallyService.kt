@@ -37,6 +37,11 @@ class TallyService : Service() {
         createChannel()
         startForeground(NOTIF_ID, buildNotification())
 
+        // Arranque seguro: si el proceso murio en modo SUMA, el perfil quedo
+        // sin teclado y el WMS no podria escanear. Se vuelve siempre a WMS.
+        settings.sumMode = false
+        restoreKeystroke()
+
         overlay = OverlayController(this, tally, settings).also { it.show() }
 
         receiver = ScanReceiver(
@@ -59,6 +64,7 @@ class TallyService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onDestroy() {
+        restoreKeystroke()
         changeListener?.let { tally.removeChange(it) }
         changeListener = null
         receiver?.let { runCatching { unregisterReceiver(it) } }
@@ -66,6 +72,13 @@ class TallyService : Service() {
         overlay?.hide()
         overlay = null
         super.onDestroy()
+    }
+
+    /** Nunca dejar el lector sin teclado si nosotros ya no estamos. */
+    private fun restoreKeystroke() {
+        if (settings.cutKeystroke) {
+            DataWedge.setKeystrokeOutput(this, settings.profileWms, true)
+        }
     }
 
     private fun onScan(raw: String) {

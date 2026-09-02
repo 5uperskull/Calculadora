@@ -50,21 +50,19 @@ class Settings(ctx: Context) {
         set(v) = put("edgeBar", v)
 
     /**
-     * Cambio de perfil de DataWedge en caliente. Apagado por defecto: cuando lo
-     * pide una app en segundo plano no esta garantizado, y si falla el WMS se
-     * queda sin escaneos. Se enciende solo tras verificarlo en el terminal.
+     * En modo SUMA, apagar la salida de teclado del lector para que el codigo
+     * no se escriba en el textbox del WMS. Apagado por defecto: si el terminal
+     * no acepta el cambio, el operario tiene que darse cuenta de que sigue
+     * escribiendose, no descubrirlo despues.
      */
-    var useProfiles: Boolean
-        get() = p.getBoolean("useProfiles", false)
-        set(v) = put("useProfiles", v)
+    var cutKeystroke: Boolean
+        get() = p.getBoolean("cutKeystroke", false)
+        set(v) = put("cutKeystroke", v)
 
+    /** Perfil de DataWedge asociado al WMS: es el que se modifica en caliente. */
     var profileWms: String
         get() = str("profileWms", "WMS")
         set(v) = put("profileWms", v)
-
-    var profileSum: String
-        get() = str("profileSum", "SUMA")
-        set(v) = put("profileSum", v)
 
     /** false = el escaneo va al WMS. true = alimenta la suma. */
     var sumMode: Boolean
