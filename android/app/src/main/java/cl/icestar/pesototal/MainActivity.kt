@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -175,7 +176,7 @@ class MainActivity : AppCompatActivity() {
      * real, en vez de adivinar su maquetacion.
      */
     private fun readScreen() {
-        screenTexts.visibility = TextView.VISIBLE
+        screenTexts.visibility = View.VISIBLE
         if (!InsertAccessibilityService.isRunning) {
             screenTexts.text = getString(R.string.pantalla_sin_accesibilidad)
             return
