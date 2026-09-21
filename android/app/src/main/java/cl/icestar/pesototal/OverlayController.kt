@@ -47,6 +47,12 @@ class OverlayController(
     private val summaryView: TextView = root.findViewById(R.id.summary)
     private val btnInsert: Button = root.findViewById(R.id.btnInsert)
     private val btnClose: Button = root.findViewById(R.id.btnClose)
+    private val btnManual: Button = root.findViewById(R.id.btnManual)
+    private val keypad: View = root.findViewById(R.id.keypad)
+    private val linesScroll: View = root.findViewById(R.id.linesScroll)
+    private val primaryRow: View = root.findViewById(R.id.primaryRow)
+    private val actionsRow: View = root.findViewById(R.id.actionsRow)
+    private val manualValue: TextView = root.findViewById(R.id.manualValue)
 
     /** Lo llena el servicio: apagar la burbuja es apagar el servicio. */
     var onExit: (() -> Unit)? = null
@@ -57,6 +63,7 @@ class OverlayController(
     private var expanded = false
     private var shown = false
     private var exitArmed = false
+    private var manualBuffer = ""
 
     // Se da de baja en hide(): el servicio se reinicia al guardar ajustes y sin
     // esto quedarian listeners apuntando a vistas ya retiradas.
@@ -160,6 +167,14 @@ class OverlayController(
             wake()
         }
         btnClose.setOnClickListener { if (exitArmed) onExit?.invoke() else armExit() }
+
+        btnManual.setOnClickListener { openManual() }
+        root.findViewById<Button>(R.id.btnManualCancel).setOnClickListener { closeManual() }
+        root.findViewById<Button>(R.id.btnManualAdd).setOnClickListener { addManual() }
+        root.findViewById<Button>(R.id.keyDel).setOnClickListener { backspaceManual() }
+        DIGITS.forEach { (id, ch) ->
+            root.findViewById<Button>(id).setOnClickListener { typeManual(ch) }
+        }
     }
 
     private fun render() {
@@ -197,15 +212,16 @@ class OverlayController(
         linesBox.removeAllViews()
         val rows = tally.snapshot()
         if (rows.isEmpty()) {
-            linesBox.addView(rowView(ctx.getString(R.string.sin_lineas), "", false, null))
+            linesBox.addView(rowView(ctx.getString(R.string.sin_lineas), "", false, false, null))
             return
         }
         rows.forEachIndexed { index, line ->
             linesBox.addView(
                 rowView(
                     WeightParser.format(line.kg, settings.comma) + " kg",
-                    line.code,
-                    line.duplicate
+                    if (line.manual) ctx.getString(R.string.manual) else line.code,
+                    line.duplicate,
+                    line.manual
                 ) {
                     tally.removeAt(index)
                     wake()
@@ -218,13 +234,17 @@ class OverlayController(
         left: String,
         right: String,
         duplicate: Boolean,
+        manual: Boolean,
         onDelete: (() -> Unit)?
     ): View {
         val row = LayoutInflater.from(ctx).inflate(R.layout.overlay_line, linesBox, false)
         val kg = row.findViewById<TextView>(R.id.lineKg)
         kg.text = left
         if (duplicate) kg.setTextColor(ctx.getColor(R.color.amber))
-        row.findViewById<TextView>(R.id.lineCode).text = right
+        val codeView = row.findViewById<TextView>(R.id.lineCode)
+        codeView.text = right
+        // El peso a mano queda marcado: es trazabilidad, no decoracion.
+        if (manual) codeView.setTextColor(ctx.getColor(R.color.ice))
         val del = row.findViewById<TextView>(R.id.lineDelete)
         if (onDelete == null) {
             del.visibility = View.INVISIBLE
@@ -243,8 +263,88 @@ class OverlayController(
     private fun expand() {
         expanded = true
         panel.visibility = View.VISIBLE
+        hideKeypad()
         render()
         wake()
+    }
+
+    // ---------------------------------------------------------- peso a mano
+
+    /**
+     * Etiquetas rotas o ilegibles hay todos los dias, asi que el peso se puede
+     * teclear. El teclado es propio en vez de un EditText: son toques sobre una
+     * ventana sin foco, asi que el cursor del WMS no se mueve ni sube el teclado
+     * del sistema tapando media pantalla.
+     */
+    private fun openManual() {
+        manualBuffer = ""
+        renderManual()
+        keypad.visibility = View.VISIBLE
+        linesScroll.visibility = View.GONE
+        primaryRow.visibility = View.GONE
+        actionsRow.visibility = View.GONE
+        wake()
+    }
+
+    private fun hideKeypad() {
+        keypad.visibility = View.GONE
+        linesScroll.visibility = View.VISIBLE
+        primaryRow.visibility = View.VISIBLE
+        actionsRow.visibility = View.VISIBLE
+    }
+
+    private fun closeManual() {
+        hideKeypad()
+        render()
+        wake()
+    }
+
+    private fun typeManual(ch: Char) {
+        val buffer = manualBuffer
+        if (ch == ',') {
+            if (buffer.contains(',')) return
+            manualBuffer = if (buffer.isEmpty()) "0," else "$buffer,"
+        } else {
+            // Tope deliberado: cuatro enteros y tres decimales cubren cualquier
+            // pallet, y cortan el cero de mas por dedo con guante.
+            if (buffer.contains(',')) {
+                if (buffer.substringAfter(',').length >= 3) return
+            } else if (buffer.length >= 4) {
+                return
+            }
+            manualBuffer = buffer + ch
+        }
+        renderManual()
+        wake()
+    }
+
+    private fun backspaceManual() {
+        if (manualBuffer.isNotEmpty()) manualBuffer = manualBuffer.dropLast(1)
+        renderManual()
+        wake()
+    }
+
+    private fun renderManual() {
+        val empty = manualBuffer.isEmpty()
+        manualValue.text =
+            if (empty) ctx.getString(R.string.manual_hint) else "$manualBuffer kg"
+        manualValue.setTextColor(ctx.getColor(if (empty) R.color.dim else R.color.txt))
+    }
+
+    /** Entrada humana: se valida y se rechaza, nunca se corrige por dentro. */
+    private fun addManual() {
+        val kg = manualBuffer.replace(',', '.').toDoubleOrNull()
+        if (kg == null || kg <= 0.0 || kg > WeightParser.MAX_KG) {
+            status(ctx.getString(R.string.manual_invalido))
+            buzz(twice = true)
+            return
+        }
+        tally.addManual(kg)
+        status(
+            ctx.getString(R.string.manual_agregado, WeightParser.format(kg, settings.comma))
+        )
+        buzz(twice = false)
+        closeManual()
     }
 
     private fun collapse() {
@@ -366,6 +466,8 @@ class OverlayController(
         root.alpha = settings.alpha / 100f
         handler.removeCallbacks(dim)
         handler.removeCallbacks(autoCollapse)
+        // Con el teclado abierto no se cierra solo: se perderia lo tecleado.
+        if (keypad.visibility == View.VISIBLE) return
         if (expanded) handler.postDelayed(autoCollapse, AUTO_COLLAPSE_MS)
         else handler.postDelayed(dim, DIM_DELAY_MS)
     }
@@ -414,6 +516,12 @@ class OverlayController(
     }
 
     private companion object {
+        val DIGITS = listOf(
+            R.id.key0 to '0', R.id.key1 to '1', R.id.key2 to '2', R.id.key3 to '3',
+            R.id.key4 to '4', R.id.key5 to '5', R.id.key6 to '6', R.id.key7 to '7',
+            R.id.key8 to '8', R.id.key9 to '9', R.id.keySep to ','
+        )
+
         const val DIM_DELAY_MS = 4_000L
         const val EXIT_CONFIRM_MS = 3_000L
         const val AUTO_COLLAPSE_MS = 12_000L

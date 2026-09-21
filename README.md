@@ -183,6 +183,9 @@ menú. Ahorra repetir todo esto equipo por equipo.
    repetida. Además **lo dice en voz alta**: *"Duplicado"* si la etiqueta ya se
    había leído, *"Sin peso"* si el código no trae peso.
 4. Toca la burbuja para ver el detalle, deshacer o borrar una línea.
+   Si una etiqueta está rota y el lector no la lee, toca **Manual** y teclea el
+   peso: se suma igual y queda marcado en azul en la lista, para que se sepa que
+   ese valor lo puso una persona.
 5. Enfoca el campo del WMS y **toca el chip SUMA para apagarlo**: eso inserta
    el total. También sirve el botón **Insertar** del panel.
    Sin accesibilidad el botón dice **Copiar**: mantén pulsado el campo y pega.
@@ -202,6 +205,21 @@ La burbuja se arrastra a donde estorbe menos y se imanta al borde.
 Salir de **SUMA** con etiquetas acumuladas **inserta el total**. Si la inserción
 falla porque no hay ningún campo enfocado, el modo se queda en SUMA: nadie
 pierde la cuenta por un descuido.
+
+### Peso a mano
+
+Botón **Manual** en el panel. Abre un teclado numérico propio — no el del
+sistema — porque la burbuja no toma el foco: **el cursor del WMS no se mueve** y
+no se te tapa media pantalla con el teclado de Android.
+
+- Acepta hasta 4 enteros y 3 decimales (`1234,567`), suficiente para cualquier
+  pallet y corta el cero de más por dedo con guante.
+- Rechaza lo que no sea un peso válido o pase de 2000 kg: avisa y no suma nada.
+- Un peso a mano **nunca se marca duplicado**, aunque repitas el valor: dos
+  cajas pesadas a mano con el mismo número son dos cajas, no una lectura
+  repetida.
+- Mientras el teclado está abierto el panel no se cierra solo, para que no se
+  pierda lo tecleado.
 
 ### Apagar la burbuja
 
@@ -237,7 +255,7 @@ Para volver a encenderla: abre **Peso Total** y toca *Mostrar burbuja*.
 | En SUMA el código igual se escribe en el WMS | El nombre del perfil no calza, o el terminal no acepta `SET_CONFIG` |
 | Aviso "Intent recibido pero sin código" | El extra tiene otro nombre: cópialo del aviso al campo *Nombre del extra* |
 | Funcionaba y dejó de funcionar | La burbuja se ocultó, o el servicio murió: vuelve a abrir la app y toca *Mostrar burbuja* |
-| "Sin peso en el código" | La etiqueta no trae `310n` y el recorte no calza |
+| "Sin peso en el código" | La etiqueta no trae `310n` y el recorte no calza. Si está rota, usa **Manual** |
 | El botón dice *Copiar* | La accesibilidad no está activa (o la bloqueó el MDM) |
 | El total entra mal en el WMS | Coma vs punto |
 | No habla, solo pita | El terminal no tiene motor de voz o le falta el español. Instala Google TTS y su voz en español, o quédate con el pitido |

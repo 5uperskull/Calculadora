@@ -97,4 +97,36 @@ class TallyTest {
         t.add(2.0, "B")
         assertEquals(1, avisos)
     }
+
+    @Test
+    fun `peso manual se suma y nunca se marca duplicado`() {
+        val t = Tally(MemStore())
+        t.addManual(11.5)
+        t.addManual(11.5)
+        assertEquals(23.0, t.total, 0.0)
+        assertFalse(t.snapshot()[0].duplicate)
+        assertFalse(t.snapshot()[1].duplicate)
+        assertTrue(t.snapshot()[1].manual)
+    }
+
+    @Test
+    fun `el peso manual sobrevive al guardado`() {
+        val store = MemStore()
+        val t = Tally(store)
+        t.add(11.5, "ETIQUETA")
+        t.addManual(3.25)
+
+        val revivido = Tally(store)
+        assertEquals(14.75, revivido.total, 0.0)
+        assertFalse(revivido.snapshot()[0].manual)
+        assertTrue(revivido.snapshot()[1].manual)
+    }
+
+    @Test
+    fun `lee lineas guardadas con el formato viejo de tres campos`() {
+        val store = MemStore("11.5\u0001ETIQUETA\u0001false")
+        val t = Tally(store)
+        assertEquals(11.5, t.total, 0.0)
+        assertFalse(t.snapshot()[0].manual)
+    }
 }

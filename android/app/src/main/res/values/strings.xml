@@ -7,6 +7,12 @@
     <string name="deshacer">Deshacer</string>
     <string name="reiniciar">Reiniciar</string>
     <string name="cerrar">Cerrar</string>
+    <string name="manual">Manual</string>
+    <string name="agregar">Agregar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="manual_hint">Teclea el peso en kg</string>
+    <string name="manual_invalido">Peso no válido</string>
+    <string name="manual_agregado">+ %1$s kg a mano</string>
     <string name="salir">Salir</string>
     <string name="salir_confirmar">¿Seguro?</string>
     <string name="salir_aviso">Toca otra vez para apagar la burbuja</string>

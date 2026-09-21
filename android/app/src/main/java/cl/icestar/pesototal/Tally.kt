@@ -68,6 +68,10 @@ class Tally(private val store: Store) {
         return false
     }
 
+    companion object {
+        const val MANUAL_CODE = "MANUAL"
+    }
+
     fun removeAt(index: Int) {
         if (index !in lines.indices) return
         lines.removeAt(index)
@@ -88,17 +92,20 @@ class Tally(private val store: Store) {
 
     // Formato propio en vez de JSON: el separador es un control char, y
     // WeightParser.clean() los borra, asi que jamas puede aparecer en un codigo.
-    private fun serialize(): String =
-        lines.joinToString("\n") { "${it.kg}\u0001${it.code}\u0001${it.duplicate}" }
+    private fun serialize(): String = lines.joinToString("\n") {
+        "${it.kg}\u0001${it.code}\u0001${it.duplicate}\u0001${it.manual}"
+    }
 
     private fun load() {
         val raw = store.load().orEmpty()
         if (raw.isBlank()) return
         raw.split("\n").forEach { row ->
             val parts = row.split("\u0001")
-            if (parts.size == 3) {
+            // >= 3 y no == 3: lo guardado antes del peso manual traia 3 campos.
+            if (parts.size >= 3) {
                 val kg = parts[0].toDoubleOrNull() ?: return@forEach
-                lines += Line(kg, parts[1], parts[2].toBoolean())
+                val manual = parts.getOrNull(3)?.toBoolean() ?: false
+                lines += Line(kg, parts[1], parts[2].toBoolean(), manual)
             }
         }
     }
