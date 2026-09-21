@@ -11,7 +11,13 @@ class Tally(private val store: Store) {
         fun save(data: String)
     }
 
-    data class Line(val kg: Double, val code: String, val duplicate: Boolean)
+    data class Line(
+        val kg: Double,
+        val code: String,
+        val duplicate: Boolean,
+        /** Tecleado a mano porque la etiqueta no se podia leer. */
+        val manual: Boolean = false
+    )
 
     private val lines = mutableListOf<Line>()
 
@@ -45,6 +51,18 @@ class Tally(private val store: Store) {
     fun add(kg: Double, code: String) {
         val duplicate = lines.any { it.code == code }
         lines += Line(WeightParser.round3(kg), code, duplicate)
+        undoSnapshot = emptyList()
+        commit()
+    }
+
+    /**
+     * Peso tecleado a mano, para etiquetas rotas o ilegibles.
+     *
+     * Nunca se marca duplicado: dos pesos iguales escritos a mano son dos cajas
+     * distintas, no una lectura repetida.
+     */
+    fun addManual(kg: Double) {
+        lines += Line(WeightParser.round3(kg), MANUAL_CODE, duplicate = false, manual = true)
         undoSnapshot = emptyList()
         commit()
     }
