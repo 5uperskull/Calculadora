@@ -68,6 +68,19 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/targetLine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_field"
+            android:gravity="center_vertical"
+            android:minHeight="44dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textColor="@color/dim"
+            android:textSize="13sp" />
+
+        <TextView
             android:id="@+id/status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

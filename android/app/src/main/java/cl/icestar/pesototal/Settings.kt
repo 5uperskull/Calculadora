@@ -40,6 +40,36 @@ class Settings(ctx: Context) {
         get() = p.getBoolean("comma", true)
         set(v) = put("comma", v)
 
+    // Los pesos se guardan como texto y no como Float: 2000,001 kg ya roza la
+    // precision de un float, y aqui el redondeo silencioso no es aceptable.
+    private fun dbl(k: String, d: Double) = str(k, d.toString()).toDoubleOrNull() ?: d
+
+    /** Peso que pide el WMS para la tarea en curso. 0 = sin objetivo. */
+    var targetKg: Double
+        get() = dbl("targetKg", 0.0)
+        set(v) = put("targetKg", v.toString())
+
+    /** Margen simetrico que se considera "en peso". */
+    var toleranceKg: Double
+        get() = dbl("toleranceKg", Target.DEFAULT_TOLERANCE_KG)
+        set(v) = put("toleranceKg", v.toString())
+
+    /** Cuanto antes del objetivo empieza el aviso de cercania. */
+    var nearKg: Double
+        get() = dbl("nearKg", Target.DEFAULT_NEAR_KG)
+        set(v) = put("nearKg", v.toString())
+
+    /**
+     * Leer el objetivo desde la pantalla del WMS.
+     *
+     * Apagado por defecto y a proposito: encenderlo amplia el alcance real del
+     * servicio de accesibilidad, que declarado solo escucha el foco de entrada.
+     * Es una decision del cliente, no un default.
+     */
+    var screenTarget: Boolean
+        get() = p.getBoolean("screenTarget", false)
+        set(v) = put("screenTarget", v)
+
     /** Aviso hablado en duplicados y errores de lectura. */
     var sound: Boolean
         get() = p.getBoolean("sound", true)

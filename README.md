@@ -41,7 +41,8 @@ Los tests corren antes de ensamblar: si el parser se rompe, no sale APK.
 2. Abre **Peso Total**. La pantalla de arriba muestra el estado de cada permiso.
 3. **Permiso: mostrar sobre otras apps** → concédelo. Sin esto no hay burbuja.
 4. **Activar accesibilidad** → búscala en la lista y actívala. Sirve para que el
-   total se escriba solo en el campo.
+   total se escriba solo en el campo, y —solo si lo activas aparte— para leer el
+   peso que pide el WMS.
    Si el MDM de la empresa lo bloquea, **no pasa nada**: la app cae al
    portapapeles automáticamente y el botón pasa a decir *Copiar*.
 5. **Mostrar burbuja**.
@@ -229,7 +230,53 @@ mitad de un turno sería caro, y con guantes se toca lo que no es.
 
 Para volver a encenderla: abre **Peso Total** y toca *Mostrar burbuja*.
 
-## 5. Calibración
+## 5. Peso objetivo y alertas
+
+El WMS le dice al operario cuántos kg tomar. Si ese objetivo se le da a la app,
+la burbuja avisa cuando llega y cuando se pasa.
+
+**Fijarlo:** toca la línea *Objetivo* del panel y teclea el peso. Un **0** lo
+borra. Se limpia solo al insertar el total, porque la tarea siguiente trae otro
+pedido.
+
+**Estados de la burbuja:**
+
+| Estado | Señal |
+|---|---|
+| Falta | Borde azul, la línea dice cuánto falta |
+| Cerca | La línea se pone azul claro al entrar en el umbral de cercanía |
+| En peso | Borde y número **verdes**, vibración larga, voz *"completo"* |
+| Excedido | Borde **rojo** grueso, vibración triple, voz *"excedido"* |
+
+La pastilla muestra `34,7 / 40 kg`, así que se lee de reojo sin abrir el panel.
+El exceso manda sobre el aviso de duplicado: es el error que cuesta plata.
+
+Los avisos suenan **solo al cambiar de estado**. Si hablaran en cada escaneo, el
+operario dejaría de oírlos.
+
+**Márgenes** (en Ajustes): *Margen en peso* es la banda simétrica que cuenta como
+completo (±0,5 kg por defecto), y *Aviso de cercanía* es cuántos kg antes empieza
+a avisar (2 kg por defecto).
+
+### Leer el objetivo desde la pantalla del WMS
+
+Está implementado a medias, y a propósito: la app puede listar lo que ve en
+pantalla, pero todavía no sabe **cuál** de esos textos es el objetivo.
+
+1. Deja el WMS al frente mostrando el peso pedido.
+2. Abre Peso Total → **PRUEBA** → **Leer la pantalla del WMS**.
+3. Sale la lista de textos visibles. Con esa lista se fija el patrón de dónde
+   sacar el número, y entonces el objetivo se rellena solo.
+
+La casilla *Leer el objetivo desde la pantalla del WMS* viene **apagada**.
+Encenderla amplía el alcance real del servicio de accesibilidad: declarado solo
+escucha el foco de entrada, y los eventos de cambio de pantalla se piden en
+caliente únicamente si tú lo activas. Consúltalo con TI antes.
+
+> El botón de diagnóstico funciona sin encender esa casilla: es una lectura
+> puntual, no una suscripción.
+
+## 6. Calibración
 
 - **Recorte de respaldo (desde / largo):** solo entra si el código no trae el
   `310n`. Si un peso no calza con la planilla, ajústalo aquí. Por defecto
@@ -246,7 +293,7 @@ Para volver a encenderla: abre **Peso Total** y toca *Mostrar burbuja*.
   sin que el código se escriba ahí. Requiere que el *Nombre del perfil asociado
   al WMS* sea exacto. Ver la sección 3.
 
-## 6. Si algo falla
+## 7. Si algo falla
 
 | Síntoma | Causa más probable |
 |---|---|
@@ -258,6 +305,8 @@ Para volver a encenderla: abre **Peso Total** y toca *Mostrar burbuja*.
 | "Sin peso en el código" | La etiqueta no trae `310n` y el recorte no calza. Si está rota, usa **Manual** |
 | El botón dice *Copiar* | La accesibilidad no está activa (o la bloqueó el MDM) |
 | El total entra mal en el WMS | Coma vs punto |
+| No avisa al llegar al peso | No hay objetivo fijado: toca la línea *Objetivo* del panel |
+| *Leer la pantalla* no devuelve nada | La accesibilidad está apagada, o el WMS no está al frente |
 | No habla, solo pita | El terminal no tiene motor de voz o le falta el español. Instala Google TTS y su voz en español, o quédate con el pitido |
 | No se oye nada | Volumen de notificaciones al mínimo, o el aviso hablado está desmarcado |
 

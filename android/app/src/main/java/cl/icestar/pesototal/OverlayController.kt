@@ -53,6 +53,7 @@ class OverlayController(
     private val primaryRow: View = root.findViewById(R.id.primaryRow)
     private val actionsRow: View = root.findViewById(R.id.actionsRow)
     private val manualValue: TextView = root.findViewById(R.id.manualValue)
+    private val targetLine: TextView = root.findViewById(R.id.targetLine)
 
     /** Lo llena el servicio: apagar la burbuja es apagar el servicio. */
     var onExit: (() -> Unit)? = null
@@ -64,6 +65,12 @@ class OverlayController(
     private var shown = false
     private var exitArmed = false
     private var manualBuffer = ""
+
+    /** El teclado sirve para el peso de una caja y para el objetivo. */
+    private var typingTarget = false
+
+    /** Null hasta el primer render: al arrancar no se avisa de nada. */
+    private var lastState: Target.State? = null
 
     // Se da de baja en hide(): el servicio se reinicia al guardar ajustes y sin
     // esto quedarian listeners apuntando a vistas ya retiradas.
@@ -113,16 +120,17 @@ class OverlayController(
             if (duplicate) ctx.getString(R.string.duplicado)
             else "+ " + WeightParser.format(kg, settings.comma) + " kg"
         )
-        buzz(twice = duplicate)
+        buzz(if (duplicate) BUZZ_DUP else BUZZ_OK)
         if (duplicate && settings.sound) Voice.say(ctx.getString(R.string.voz_duplicado))
         wake()
     }
 
     /**
-     * Con guantes y ruido de camara de frio la pantalla no basta: una vibracion
-     * corta confirma, dos seguidas avisan de etiqueta repetida.
+     * Con guantes y ruido de camara de frio la pantalla no basta. Cada patron
+     * significa una cosa: corta confirma, doble avisa de repetida o de error,
+     * larga es peso alcanzado, y triple es exceso.
      */
-    private fun buzz(twice: Boolean) {
+    private fun buzz(pattern: LongArray) {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             (ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager)
                 .defaultVibrator
@@ -131,7 +139,6 @@ class OverlayController(
             ctx.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
         if (!vibrator.hasVibrator()) return
-        val pattern = if (twice) longArrayOf(0, 45, 90, 45) else longArrayOf(0, 30)
         vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
     }
 
@@ -147,7 +154,7 @@ class OverlayController(
 
     fun onScanRejected(code: String) {
         Toast.makeText(ctx, ctx.getString(R.string.sin_peso, code), Toast.LENGTH_SHORT).show()
-        buzz(twice = true)
+        buzz(BUZZ_DUP)
         if (settings.sound) Voice.say(ctx.getString(R.string.voz_sin_peso))
         wake()
     }
@@ -169,6 +176,7 @@ class OverlayController(
         btnClose.setOnClickListener { if (exitArmed) onExit?.invoke() else armExit() }
 
         btnManual.setOnClickListener { openManual() }
+        targetLine.setOnClickListener { openTarget() }
         root.findViewById<Button>(R.id.btnManualCancel).setOnClickListener { closeManual() }
         root.findViewById<Button>(R.id.btnManualAdd).setOnClickListener { addManual() }
         root.findViewById<Button>(R.id.keyDel).setOnClickListener { backspaceManual() }
@@ -178,17 +186,39 @@ class OverlayController(
     }
 
     private fun render() {
-        val total = WeightParser.format(tally.total, settings.comma)
-        totalView.text = "$total kg"
-        countView.text = tally.count.toString()
-        summaryView.text = ctx.getString(R.string.resumen, tally.count, total)
+        val totalText = WeightParser.format(tally.total, settings.comma)
+        val target = settings.targetKg
+        val state = Target.state(tally.total, target, settings.toleranceKg, settings.nearKg)
 
-        // La ultima etiqueta repetida marca la pastilla: se ve sin desplegar nada.
+        totalView.text = if (target > 0.0) {
+            totalText + " / " + WeightParser.format(target, settings.comma) + " kg"
+        } else {
+            "$totalText kg"
+        }
+        countView.text = tally.count.toString()
+        summaryView.text = ctx.getString(R.string.resumen, tally.count, totalText)
+        renderTargetLine(target, state)
+
         val duplicate = tally.snapshot().lastOrNull()?.duplicate == true
+        // El exceso manda sobre el duplicado: es el error que cuesta plata.
         pill.setBackgroundResource(
-            if (duplicate) R.drawable.bg_pill_dup else R.drawable.bg_pill
+            when {
+                state == Target.State.EXCEDIDO -> R.drawable.bg_pill_over
+                state == Target.State.EN_PESO -> R.drawable.bg_pill_ok
+                duplicate -> R.drawable.bg_pill_dup
+                else -> R.drawable.bg_pill
+            }
         )
-        totalView.setTextColor(ctx.getColor(if (duplicate) R.color.amber else R.color.txt))
+        totalView.setTextColor(
+            ctx.getColor(
+                when {
+                    state == Target.State.EXCEDIDO -> R.color.coral
+                    state == Target.State.EN_PESO -> R.color.green
+                    duplicate -> R.color.amber
+                    else -> R.color.txt
+                }
+            )
+        )
 
         modeChip.text = ctx.getString(if (settings.sumMode) R.string.modo_suma else R.string.modo_wms)
         modeChip.setBackgroundResource(
@@ -205,6 +235,64 @@ class OverlayController(
         countView.visibility = if (settings.edgeBar && !expanded) View.GONE else View.VISIBLE
 
         renderLines()
+        announceTarget(state)
+    }
+
+    private fun renderTargetLine(target: Double, state: Target.State) {
+        if (target <= 0.0) {
+            targetLine.text = ctx.getString(R.string.objetivo_vacio)
+            targetLine.setTextColor(ctx.getColor(R.color.dim))
+            return
+        }
+        val targetText = WeightParser.format(target, settings.comma)
+        val diff = Target.remaining(tally.total, target)
+        val text: String
+        val color: Int
+        when (state) {
+            Target.State.EN_PESO -> {
+                text = ctx.getString(R.string.objetivo_en_peso, targetText)
+                color = R.color.green
+            }
+            Target.State.EXCEDIDO -> {
+                text = ctx.getString(
+                    R.string.objetivo_excedido,
+                    targetText,
+                    WeightParser.format(-diff, settings.comma)
+                )
+                color = R.color.coral
+            }
+            else -> {
+                text = ctx.getString(
+                    R.string.objetivo_falta,
+                    targetText,
+                    WeightParser.format(diff, settings.comma)
+                )
+                color = if (state == Target.State.CERCA) R.color.ice else R.color.dim
+            }
+        }
+        targetLine.text = text
+        targetLine.setTextColor(ctx.getColor(color))
+    }
+
+    /**
+     * Avisa solo en el cambio de estado. Si lo hiciera en cada render, cada
+     * escaneo repetiria "excedido" y el operario dejaria de oirlo.
+     */
+    private fun announceTarget(state: Target.State) {
+        val previous = lastState
+        lastState = state
+        if (previous == null || previous == state) return
+        when (state) {
+            Target.State.EN_PESO -> {
+                buzz(BUZZ_TARGET)
+                if (settings.sound) Voice.say(ctx.getString(R.string.voz_completo))
+            }
+            Target.State.EXCEDIDO -> {
+                buzz(BUZZ_OVER)
+                if (settings.sound) Voice.say(ctx.getString(R.string.voz_excedido))
+            }
+            else -> Unit
+        }
     }
 
     private fun renderLines() {
@@ -277,6 +365,17 @@ class OverlayController(
      * del sistema tapando media pantalla.
      */
     private fun openManual() {
+        typingTarget = false
+        openKeypad()
+    }
+
+    /** Mismo teclado, otro destino: el peso que pide el WMS. */
+    private fun openTarget() {
+        typingTarget = true
+        openKeypad()
+    }
+
+    private fun openKeypad() {
         manualBuffer = ""
         renderManual()
         keypad.visibility = View.VISIBLE
@@ -326,24 +425,47 @@ class OverlayController(
 
     private fun renderManual() {
         val empty = manualBuffer.isEmpty()
-        manualValue.text =
-            if (empty) ctx.getString(R.string.manual_hint) else "$manualBuffer kg"
+        manualValue.text = if (empty) {
+            ctx.getString(if (typingTarget) R.string.objetivo_hint else R.string.manual_hint)
+        } else {
+            "$manualBuffer kg"
+        }
         manualValue.setTextColor(ctx.getColor(if (empty) R.color.dim else R.color.txt))
     }
 
     /** Entrada humana: se valida y se rechaza, nunca se corrige por dentro. */
     private fun addManual() {
         val kg = manualBuffer.replace(',', '.').toDoubleOrNull()
-        if (kg == null || kg <= 0.0 || kg > WeightParser.MAX_KG) {
+        // En el objetivo el cero es valido y significa borrarlo; en un peso no.
+        val minimum = if (typingTarget) 0.0 else 0.001
+        if (kg == null || kg < minimum || kg > WeightParser.MAX_KG) {
             status(ctx.getString(R.string.manual_invalido))
-            buzz(twice = true)
+            buzz(BUZZ_DUP)
             return
         }
-        tally.addManual(kg)
-        status(
-            ctx.getString(R.string.manual_agregado, WeightParser.format(kg, settings.comma))
-        )
-        buzz(twice = false)
+
+        if (typingTarget) {
+            settings.targetKg = kg
+            // Objetivo nuevo, historia nueva: sin esto el cambio de banda
+            // arrastraria el estado del pedido anterior.
+            lastState = null
+            status(
+                if (kg <= 0.0) {
+                    ctx.getString(R.string.objetivo_borrado)
+                } else {
+                    ctx.getString(
+                        R.string.objetivo_fijado, WeightParser.format(kg, settings.comma)
+                    )
+                }
+            )
+        } else {
+            tally.addManual(kg)
+            status(
+                ctx.getString(R.string.manual_agregado, WeightParser.format(kg, settings.comma))
+            )
+        }
+
+        buzz(BUZZ_OK)
         closeManual()
     }
 
@@ -408,7 +530,13 @@ class OverlayController(
     }
 
     private fun afterInsert() {
-        if (settings.resetAfterInsert) tally.reset()
+        if (settings.resetAfterInsert) {
+            tally.reset()
+            // La tarea siguiente trae otro pedido: arrastrar el objetivo viejo
+            // haria sonar "excedido" en cuanto empiece a sumar.
+            settings.targetKg = 0.0
+            lastState = null
+        }
         if (settings.sumMode) setMode(false)
         wake()
     }
@@ -521,6 +649,11 @@ class OverlayController(
             R.id.key4 to '4', R.id.key5 to '5', R.id.key6 to '6', R.id.key7 to '7',
             R.id.key8 to '8', R.id.key9 to '9', R.id.keySep to ','
         )
+
+        val BUZZ_OK = longArrayOf(0, 30)
+        val BUZZ_DUP = longArrayOf(0, 45, 90, 45)
+        val BUZZ_TARGET = longArrayOf(0, 220)
+        val BUZZ_OVER = longArrayOf(0, 120, 80, 120, 80, 120)
 
         const val DIM_DELAY_MS = 4_000L
         const val EXIT_CONFIRM_MS = 3_000L

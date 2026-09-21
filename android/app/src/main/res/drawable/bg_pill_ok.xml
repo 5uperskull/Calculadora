@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- En peso: verde funcional de la identidad LATAM. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#0B2B1A" />
+    <stroke android:width="2dp" android:color="@color/green" />
+    <corners android:radius="22dp" />
+</shape>

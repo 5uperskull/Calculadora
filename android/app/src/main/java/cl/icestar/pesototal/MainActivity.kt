@@ -27,14 +27,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var offset: EditText
     private lateinit var len: EditText
     private lateinit var alpha: EditText
+    private lateinit var tolerance: EditText
+    private lateinit var near: EditText
     private lateinit var profileWms: EditText
     private lateinit var comma: CheckBox
     private lateinit var resetAfter: CheckBox
     private lateinit var edgeBar: CheckBox
     private lateinit var sound: CheckBox
+    private lateinit var screenTarget: CheckBox
     private lateinit var cutKeystroke: CheckBox
     private lateinit var test: EditText
     private lateinit var testResult: TextView
+    private lateinit var screenTexts: TextView
 
     override fun onCreate(saved: Bundle?) {
         super.onCreate(saved)
@@ -48,14 +52,18 @@ class MainActivity : AppCompatActivity() {
         offset = findViewById(R.id.offset)
         len = findViewById(R.id.len)
         alpha = findViewById(R.id.alpha)
+        tolerance = findViewById(R.id.tolerance)
+        near = findViewById(R.id.near)
         profileWms = findViewById(R.id.profileWms)
         comma = findViewById(R.id.comma)
         resetAfter = findViewById(R.id.resetAfter)
         edgeBar = findViewById(R.id.edgeBar)
         sound = findViewById(R.id.sound)
+        screenTarget = findViewById(R.id.screenTarget)
         cutKeystroke = findViewById(R.id.cutKeystroke)
         test = findViewById(R.id.test)
         testResult = findViewById(R.id.testResult)
+        screenTexts = findViewById(R.id.screenTexts)
 
         findViewById<Button>(R.id.btnOverlay).setOnClickListener {
             startActivity(
@@ -81,6 +89,7 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btnSave).setOnClickListener { save() }
         findViewById<Button>(R.id.btnTest).setOnClickListener { runTest() }
+        findViewById<Button>(R.id.btnReadScreen).setOnClickListener { readScreen() }
         findViewById<Button>(R.id.btnTestVoice).setOnClickListener {
             // Arranca el motor aunque la burbuja este apagada: probar la voz es
             // justo lo que se hace antes de desplegar.
@@ -117,11 +126,14 @@ class MainActivity : AppCompatActivity() {
         offset.setText(s.offset.toString())
         len.setText(s.len.toString())
         alpha.setText(s.alpha.toString())
+        tolerance.setText(WeightParser.format(s.toleranceKg, s.comma))
+        near.setText(WeightParser.format(s.nearKg, s.comma))
         profileWms.setText(s.profileWms)
         comma.isChecked = s.comma
         resetAfter.isChecked = s.resetAfterInsert
         edgeBar.isChecked = s.edgeBar
         sound.isChecked = s.sound
+        screenTarget.isChecked = s.screenTarget
         cutKeystroke.isChecked = s.cutKeystroke
     }
 
@@ -131,11 +143,17 @@ class MainActivity : AppCompatActivity() {
         s.offset = offset.text.toString().toIntOrNull() ?: WeightParser.DEFAULT_OFFSET
         s.len = len.text.toString().toIntOrNull() ?: WeightParser.DEFAULT_LEN
         s.alpha = alpha.text.toString().toIntOrNull() ?: 75
+        s.toleranceKg = kgOf(tolerance, Target.DEFAULT_TOLERANCE_KG)
+        s.nearKg = kgOf(near, Target.DEFAULT_NEAR_KG)
         s.profileWms = profileWms.text.toString().trim().ifEmpty { "WMS" }
         s.comma = comma.isChecked
         s.resetAfterInsert = resetAfter.isChecked
         s.edgeBar = edgeBar.isChecked
         s.sound = sound.isChecked
+        s.screenTarget = screenTarget.isChecked
+        // El alcance del servicio se amplia o se reduce aqui mismo, no al
+        // reinstalar: asi apagar la casilla surte efecto de inmediato.
+        InsertAccessibilityService.applyScope(s.screenTarget)
         s.cutKeystroke = cutKeystroke.isChecked
         fill()
 
@@ -143,6 +161,31 @@ class MainActivity : AppCompatActivity() {
         TallyService.stop(this)
         startBubble()
         Toast.makeText(this, R.string.guardado, Toast.LENGTH_SHORT).show()
+    }
+
+    /** Acepta coma o punto: en piso se teclea como se habla. */
+    private fun kgOf(field: EditText, fallback: Double): Double {
+        val value = field.text.toString().trim().replace(',', '.').toDoubleOrNull()
+        return if (value == null || value < 0.0) fallback else value
+    }
+
+    /**
+     * Diagnostico: lista los textos que el servicio ve en la pantalla de al
+     * lado. Es lo que permite fijar de donde sacar el objetivo mirando el WMS
+     * real, en vez de adivinar su maquetacion.
+     */
+    private fun readScreen() {
+        screenTexts.visibility = TextView.VISIBLE
+        if (!InsertAccessibilityService.isRunning) {
+            screenTexts.text = getString(R.string.pantalla_sin_accesibilidad)
+            return
+        }
+        val texts = InsertAccessibilityService.readScreenTexts()
+        screenTexts.text = if (texts.isEmpty()) {
+            getString(R.string.pantalla_vacia)
+        } else {
+            texts.joinToString(separator = "\n") { "\u00b7 " + it }
+        }
     }
 
     private fun runTest() {

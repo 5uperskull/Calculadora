@@ -238,6 +238,38 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/tolerance"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_field"
+                android:hint="Margen en peso (kg)"
+                android:inputType="numberDecimal"
+                android:padding="10dp"
+                android:textColor="@color/txt"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/near"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_field"
+                android:hint="Aviso de cercanía (kg)"
+                android:inputType="numberDecimal"
+                android:padding="10dp"
+                android:textColor="@color/txt"
+                android:textSize="13sp" />
+        </LinearLayout>
+
         <CheckBox
             android:id="@+id/comma"
             android:layout_width="wrap_content"
@@ -269,6 +301,14 @@
             android:layout_height="wrap_content"
             android:text="Modo barra de borde (más discreto)"
             android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/screenTarget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Leer el objetivo desde la pantalla del WMS (amplía el alcance del servicio de accesibilidad: consúltalo con TI)"
+            android:textColor="@color/amber"
             android:textSize="13sp" />
 
         <Button
@@ -322,6 +362,28 @@
             android:text="Probar la voz"
             android:textColor="@color/txt"
             android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnReadScreen"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_button"
+            android:text="Leer la pantalla del WMS"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/screenTexts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_field"
+            android:fontFamily="monospace"
+            android:padding="10dp"
+            android:textColor="@color/dim"
+            android:textSize="11sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/testResult"

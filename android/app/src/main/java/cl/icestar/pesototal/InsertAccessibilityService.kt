@@ -3,6 +3,7 @@ package cl.icestar.pesototal
 import android.accessibilityservice.AccessibilityService
 import android.os.Bundle
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
 /**
@@ -16,6 +17,7 @@ class InsertAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
+        applyScope(PesoApp.instance.settings.screenTarget)
     }
 
     override fun onDestroy() {
@@ -32,6 +34,69 @@ class InsertAccessibilityService : AccessibilityService() {
         private var instance: InsertAccessibilityService? = null
 
         val isRunning: Boolean get() = instance != null
+
+        /**
+         * Amplia o reduce el alcance en caliente.
+         *
+         * Declarado en XML el servicio solo escucha el foco de entrada. Los
+         * eventos de cambio de pantalla se piden aqui, y solo si el cliente
+         * encendio la lectura del objetivo: el alcance minimo sigue siendo el
+         * default, y ampliarlo es un acto deliberado.
+         */
+        fun applyScope(readScreen: Boolean) {
+            val svc = instance ?: return
+            val info = svc.serviceInfo ?: return
+            val extra = if (readScreen) {
+                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
+                    AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+            } else {
+                0
+            }
+            info.eventTypes = AccessibilityEvent.TYPE_VIEW_FOCUSED or extra
+            svc.serviceInfo = info
+        }
+
+        /**
+         * Textos visibles en la ventana activa, para diagnosticar contra el WMS
+         * real en vez de adivinar su maquetacion.
+         *
+         * Es una lectura puntual: no necesita ampliar el alcance porque no se
+         * suscribe a nada, solo mira el arbol en el instante en que se pide.
+         */
+        fun readScreenTexts(limit: Int = 60): List<String> {
+            val svc = instance ?: return emptyList()
+            val root = svc.rootInActiveWindow ?: return emptyList()
+            val out = LinkedHashSet<String>()
+            try {
+                collect(root, out, limit, depth = 0)
+            } finally {
+                @Suppress("DEPRECATION")
+                root.recycle()
+            }
+            return out.toList()
+        }
+
+        private fun collect(
+            node: AccessibilityNodeInfo,
+            out: MutableSet<String>,
+            limit: Int,
+            depth: Int
+        ) {
+            // Tope de profundidad y de resultados: un arbol de WebView puede
+            // tener miles de nodos y esto corre en el hilo principal.
+            if (out.size >= limit || depth > 24) return
+            val text = (node.text ?: node.contentDescription)?.toString()?.trim()
+            if (!text.isNullOrEmpty() && text.length <= 80) out += text
+            for (i in 0 until node.childCount) {
+                val child = node.getChild(i) ?: continue
+                try {
+                    collect(child, out, limit, depth + 1)
+                } finally {
+                    @Suppress("DEPRECATION")
+                    child.recycle()
+                }
+            }
+        }
 
         /** false = no hay servicio, no hay campo enfocado, o el campo lo rechazo. */
         fun setFocusedText(text: String): Boolean {
