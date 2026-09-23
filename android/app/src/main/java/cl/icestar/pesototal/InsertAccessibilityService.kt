@@ -2,6 +2,8 @@ package cl.icestar.pesototal
 
 import android.accessibilityservice.AccessibilityService
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
@@ -20,11 +22,32 @@ class InsertAccessibilityService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        handler.removeCallbacks(scan)
         if (instance === this) instance = null
         super.onDestroy()
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) = Unit
+    private val handler = Handler(Looper.getMainLooper())
+    private val scan = Runnable { scanForTarget() }
+
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (!PesoApp.instance.settings.screenTarget) return
+        // El WMS redibuja la pantalla varias veces seguidas: se agrupan los
+        // eventos para no recorrer el arbol una vez por cada redibujado.
+        handler.removeCallbacks(scan)
+        handler.postDelayed(scan, SCAN_DEBOUNCE_MS)
+    }
+
+    private fun scanForTarget() {
+        val settings = PesoApp.instance.settings
+        val found = TargetScraper.findTarget(readScreenTexts(120), settings.targetAnchor)
+            ?: return
+        // Un peso imposible es un numero mal leido, no un pedido raro.
+        if (found <= 0.0 || found > WeightParser.MAX_KG) return
+        if (found == settings.targetKg) return
+        settings.targetKg = found
+        onTargetDetected?.invoke(found)
+    }
 
     override fun onInterrupt() = Unit
 
@@ -33,6 +56,11 @@ class InsertAccessibilityService : AccessibilityService() {
         private var instance: InsertAccessibilityService? = null
 
         val isRunning: Boolean get() = instance != null
+
+        /** Lo llena TallyService para llevar el objetivo detectado a la burbuja. */
+        var onTargetDetected: ((Double) -> Unit)? = null
+
+        private const val SCAN_DEBOUNCE_MS = 400L
 
         /**
          * Amplia o reduce el alcance en caliente.

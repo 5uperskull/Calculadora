@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var alpha: EditText
     private lateinit var tolerance: EditText
     private lateinit var near: EditText
+    private lateinit var targetAnchor: EditText
     private lateinit var profileWms: EditText
     private lateinit var comma: CheckBox
     private lateinit var resetAfter: CheckBox
@@ -55,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         alpha = findViewById(R.id.alpha)
         tolerance = findViewById(R.id.tolerance)
         near = findViewById(R.id.near)
+        targetAnchor = findViewById(R.id.targetAnchor)
         profileWms = findViewById(R.id.profileWms)
         comma = findViewById(R.id.comma)
         resetAfter = findViewById(R.id.resetAfter)
@@ -129,6 +131,7 @@ class MainActivity : AppCompatActivity() {
         alpha.setText(s.alpha.toString())
         tolerance.setText(WeightParser.format(s.toleranceKg, s.comma))
         near.setText(WeightParser.format(s.nearKg, s.comma))
+        targetAnchor.setText(s.targetAnchor)
         profileWms.setText(s.profileWms)
         comma.isChecked = s.comma
         resetAfter.isChecked = s.resetAfterInsert
@@ -146,6 +149,8 @@ class MainActivity : AppCompatActivity() {
         s.alpha = alpha.text.toString().toIntOrNull() ?: 75
         s.toleranceKg = kgOf(tolerance, Target.DEFAULT_TOLERANCE_KG)
         s.nearKg = kgOf(near, Target.DEFAULT_NEAR_KG)
+        s.targetAnchor = targetAnchor.text.toString().trim()
+            .ifEmpty { TargetScraper.DEFAULT_ANCHOR }
         s.profileWms = profileWms.text.toString().trim().ifEmpty { "WMS" }
         s.comma = comma.isChecked
         s.resetAfterInsert = resetAfter.isChecked
@@ -182,11 +187,21 @@ class MainActivity : AppCompatActivity() {
             return
         }
         val texts = InsertAccessibilityService.readScreenTexts()
-        screenTexts.text = if (texts.isEmpty()) {
-            getString(R.string.pantalla_vacia)
-        } else {
-            texts.joinToString(separator = "\n") { "\u00b7 " + it }
+        if (texts.isEmpty()) {
+            screenTexts.text = getString(R.string.pantalla_vacia)
+            return
         }
+        // Ademas de la lista, el veredicto: sin esto hay que comparar a ojo si
+        // el ancla calza con lo que muestra el WMS.
+        val anchor = targetAnchor.text.toString().trim().ifEmpty { TargetScraper.DEFAULT_ANCHOR }
+        val found = TargetScraper.findTarget(texts, anchor)
+        val verdict = if (found == null) {
+            getString(R.string.pantalla_no_detectado)
+        } else {
+            getString(R.string.pantalla_detectado, WeightParser.format(found, s.comma))
+        }
+        screenTexts.text = verdict + "\n\n" +
+            texts.joinToString(separator = "\n") { "\u00b7 " + it }
     }
 
     private fun runTest() {

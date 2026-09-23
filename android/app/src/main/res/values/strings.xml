@@ -18,6 +18,9 @@
     <string name="objetivo_en_peso">Objetivo %1$s kg · en peso</string>
     <string name="objetivo_excedido">Objetivo %1$s kg · excedido por %2$s</string>
     <string name="objetivo_borrado">Objetivo borrado</string>
+    <string name="objetivo_detectado">Objetivo leído del WMS: %1$s kg</string>
+    <string name="pantalla_detectado">Objetivo detectado: %1$s kg</string>
+    <string name="pantalla_no_detectado">No se encontró el objetivo. Revisa el texto de anclaje.</string>
     <string name="voz_completo">Completo</string>
     <string name="pantalla_sin_accesibilidad">Accesibilidad apagada: actívala para poder leer la pantalla</string>
     <string name="pantalla_vacia">No se leyó ningún texto. Abre el WMS, déjalo al frente y vuelve aquí</string>

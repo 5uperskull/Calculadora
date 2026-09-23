@@ -48,6 +48,7 @@ class TallyService : Service() {
             it.onExit = { stopSelf() }
             it.show()
         }
+        InsertAccessibilityService.onTargetDetected = { kg -> overlay?.onTargetDetected(kg) }
 
         receiver = ScanReceiver(
             onScan = { raw -> onScan(raw) },
@@ -70,6 +71,7 @@ class TallyService : Service() {
 
     override fun onDestroy() {
         isRunning = false
+        InsertAccessibilityService.onTargetDetected = null
         Voice.stop()
         restoreKeystroke()
         changeListener?.let { tally.removeChange(it) }

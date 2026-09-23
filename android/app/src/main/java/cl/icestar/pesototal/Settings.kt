@@ -70,6 +70,11 @@ class Settings(ctx: Context) {
         get() = p.getBoolean("screenTarget", false)
         set(v) = put("screenTarget", v)
 
+    /** Texto de la pantalla del WMS que precede al peso pedido. */
+    var targetAnchor: String
+        get() = str("targetAnchor", TargetScraper.DEFAULT_ANCHOR)
+        set(v) = put("targetAnchor", v)
+
     /** Aviso hablado en duplicados y errores de lectura. */
     var sound: Boolean
         get() = p.getBoolean("sound", true)

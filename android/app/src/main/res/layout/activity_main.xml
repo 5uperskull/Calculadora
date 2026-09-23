@@ -303,6 +303,18 @@
             android:textColor="@color/txt"
             android:textSize="13sp" />
 
+        <EditText
+            android:id="@+id/targetAnchor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_field"
+            android:hint="Texto antes del peso pedido en el WMS"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
         <CheckBox
             android:id="@+id/screenTarget"
             android:layout_width="match_parent"

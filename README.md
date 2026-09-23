@@ -260,13 +260,33 @@ a avisar (2 kg por defecto).
 
 ### Leer el objetivo desde la pantalla del WMS
 
-Está implementado a medias, y a propósito: la app puede listar lo que ve en
-pantalla, pero todavía no sabe **cuál** de esos textos es el objetivo.
+Ya funciona contra easyWMS. En la pantalla *Tareas de picking* el objetivo está
+en la línea **`Cantidad pendiente: 40 [KG]`**, y de ahí lo saca la app.
 
-1. Deja el WMS al frente mostrando el peso pedido.
-2. Abre Peso Total → **PRUEBA** → **Leer la pantalla del WMS**.
-3. Sale la lista de textos visibles. Con esa lista se fija el patrón de dónde
-   sacar el número, y entonces el objetivo se rellena solo.
+Dos trampas de esa pantalla, ya resueltas:
+
+- Justo debajo hay **`Cantidad restante`**, casi igual de nombre. Por eso se
+  ancla al texto exacto y no a algo como "Cantidad".
+- Antes aparece `Dejar en: 000000000000788021`, un número de 18 dígitos. Por eso
+  solo se lee lo que viene **después** del ancla, nunca antes.
+
+**Para activarlo:**
+
+1. Ajustes → campo *Texto antes del peso pedido en el WMS*. Trae
+   `Cantidad pendiente`, que es lo correcto para easyWMS.
+2. Marca *Leer el objetivo desde la pantalla del WMS* y guarda.
+3. Comprueba: deja el WMS al frente con una tarea abierta y usa
+   **PRUEBA → Leer la pantalla del WMS**. Arriba sale el veredicto
+   (*Objetivo detectado: 40 kg*) y debajo la lista de textos que vio.
+
+A partir de ahí el objetivo se rellena solo al cambiar de tarea, y la burbuja
+avisa igual que si lo hubieras tecleado.
+
+**Si el WMS cambia de pantalla o de idioma** y el ancla deja de calzar, el
+diagnóstico lo dice y basta con cambiar el texto del campo. Sin recompilar.
+
+> Un separador de miles (`1.234` por 1234 kg) se leería como 1,234 kg. Se ve a
+> simple vista en la burbuja y el objetivo siempre se puede teclear a mano.
 
 La casilla *Leer el objetivo desde la pantalla del WMS* viene **apagada**.
 Encenderla amplía el alcance real del servicio de accesibilidad: declarado solo
@@ -307,6 +327,7 @@ caliente únicamente si tú lo activas. Consúltalo con TI antes.
 | El total entra mal en el WMS | Coma vs punto |
 | No avisa al llegar al peso | No hay objetivo fijado: toca la línea *Objetivo* del panel |
 | *Leer la pantalla* no devuelve nada | La accesibilidad está apagada, o el WMS no está al frente |
+| Lee la pantalla pero no detecta el objetivo | El texto de anclaje no calza: cópialo de la lista que sale en el diagnóstico |
 | No habla, solo pita | El terminal no tiene motor de voz o le falta el español. Instala Google TTS y su voz en español, o quédate con el pitido |
 | No se oye nada | Volumen de notificaciones al mínimo, o el aviso hablado está desmarcado |
 

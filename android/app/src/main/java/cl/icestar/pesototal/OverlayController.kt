@@ -152,6 +152,16 @@ class OverlayController(
         wake()
     }
 
+    /** El objetivo llego solo desde la pantalla del WMS. */
+    fun onTargetDetected(kg: Double) {
+        // Objetivo nuevo, historia nueva: sin esto el cambio de banda
+        // arrastraria el estado del pedido anterior.
+        lastState = null
+        status(ctx.getString(R.string.objetivo_detectado, WeightParser.format(kg, settings.comma)))
+        render()
+        wake()
+    }
+
     fun onScanRejected(code: String) {
         Toast.makeText(ctx, ctx.getString(R.string.sin_peso, code), Toast.LENGTH_SHORT).show()
         buzz(BUZZ_DUP)
