@@ -381,7 +381,7 @@
             android:layout_height="44dp"
             android:layout_marginTop="6dp"
             android:background="@drawable/bg_button"
-            android:text="Leer la pantalla del WMS"
+            android:text="Ver la última lectura de pantalla"
             android:textColor="@color/txt"
             android:textSize="13sp" />
 

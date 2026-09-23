@@ -176,19 +176,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Diagnostico: lista los textos que el servicio ve en la pantalla de al
-     * lado. Es lo que permite fijar de donde sacar el objetivo mirando el WMS
-     * real, en vez de adivinar su maquetacion.
+     * Muestra la ultima lectura hecha desde la burbuja, con el veredicto de si
+     * el ancla calzo. Es lo que permite ajustar el texto de anclaje mirando lo
+     * que el WMS publica de verdad, en vez de adivinar su maquetacion.
      */
     private fun readScreen() {
         screenTexts.visibility = View.VISIBLE
-        if (!InsertAccessibilityService.isRunning) {
-            screenTexts.text = getString(R.string.pantalla_sin_accesibilidad)
-            return
-        }
-        val texts = InsertAccessibilityService.readScreenTexts()
+
+        // No se lee en vivo: desde aqui la ventana activa es esta pantalla, no
+        // el WMS, y se leerian los textos de la propia app. La captura se hace
+        // desde la burbuja y aqui solo se consulta.
+        val texts = s.lastScreenTexts.split("|").filter { it.isNotBlank() }
         if (texts.isEmpty()) {
-            screenTexts.text = getString(R.string.pantalla_vacia)
+            screenTexts.text = getString(R.string.pantalla_sin_captura)
             return
         }
         // Ademas de la lista, el veredicto: sin esto hay que comparar a ojo si

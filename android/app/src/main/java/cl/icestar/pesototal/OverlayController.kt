@@ -152,6 +152,40 @@ class OverlayController(
         wake()
     }
 
+    /**
+     * Lectura puntual pedida desde la burbuja.
+     *
+     * Tiene que dispararse desde aqui: la burbuja no toma el foco, asi que la
+     * ventana activa sigue siendo el WMS y es su arbol el que se lee. Pedirlo
+     * desde la pantalla de ajustes leeria los textos de la propia app.
+     */
+    private fun scanScreenNow() {
+        if (!InsertAccessibilityService.isRunning) {
+            status(ctx.getString(R.string.pantalla_sin_accesibilidad))
+            buzz(BUZZ_DUP)
+            return
+        }
+
+        val texts = InsertAccessibilityService.readScreenTexts()
+        settings.lastScreenTexts = texts.joinToString(separator = "|")
+
+        val found = TargetScraper.findTarget(texts, settings.targetAnchor)
+        if (found == null || found <= 0.0 || found > WeightParser.MAX_KG) {
+            status(ctx.getString(R.string.pantalla_no_detectado))
+            buzz(BUZZ_DUP)
+            return
+        }
+
+        settings.targetKg = found
+        lastState = null
+        status(
+            ctx.getString(R.string.objetivo_detectado, WeightParser.format(found, settings.comma))
+        )
+        buzz(BUZZ_OK)
+        render()
+        wake()
+    }
+
     /** El objetivo llego solo desde la pantalla del WMS. */
     fun onTargetDetected(kg: Double) {
         // Objetivo nuevo, historia nueva: sin esto el cambio de banda
@@ -187,6 +221,10 @@ class OverlayController(
 
         btnManual.setOnClickListener { openManual() }
         targetLine.setOnClickListener { openTarget() }
+        targetLine.setOnLongClickListener {
+            scanScreenNow()
+            true
+        }
         root.findViewById<Button>(R.id.btnManualCancel).setOnClickListener { closeManual() }
         root.findViewById<Button>(R.id.btnManualAdd).setOnClickListener { addManual() }
         root.findViewById<Button>(R.id.keyDel).setOnClickListener { backspaceManual() }

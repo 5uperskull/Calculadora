@@ -12,7 +12,7 @@
     <string name="cancelar">Cancelar</string>
     <string name="manual_hint">Teclea el peso en kg</string>
     <string name="objetivo_hint">Teclea el objetivo en kg (0 lo borra)</string>
-    <string name="objetivo_vacio">Objetivo: toca para fijarlo</string>
+    <string name="objetivo_vacio">Objetivo: toca para fijarlo, mantén para leerlo del WMS</string>
     <string name="objetivo_fijado">Objetivo %1$s kg</string>
     <string name="objetivo_falta">Objetivo %1$s kg · faltan %2$s</string>
     <string name="objetivo_en_peso">Objetivo %1$s kg · en peso</string>
@@ -23,7 +23,10 @@
     <string name="pantalla_no_detectado">No se encontró el objetivo. Revisa el texto de anclaje.</string>
     <string name="voz_completo">Completo</string>
     <string name="pantalla_sin_accesibilidad">Accesibilidad apagada: actívala para poder leer la pantalla</string>
-    <string name="pantalla_vacia">No se leyó ningún texto. Abre el WMS, déjalo al frente y vuelve aquí</string>
+    <string name="pantalla_vacia">No se leyó ningún texto</string>
+    <string name="pantalla_sin_captura">Todavía no hay ninguna lectura.
+
+En la burbuja, con el WMS al frente, mantén pulsada la línea Objetivo del panel.</string>
     <string name="voz_excedido">Excedido</string>
     <string name="manual_invalido">Peso no válido</string>
     <string name="manual_agregado">+ %1$s kg a mano</string>

@@ -113,6 +113,11 @@ class Settings(ctx: Context) {
         get() = p.getBoolean("resetAfterInsert", true)
         set(v) = put("resetAfterInsert", v)
 
+    /** Ultima lectura de pantalla hecha desde la burbuja, para verla en Ajustes. */
+    var lastScreenTexts: String
+        get() = str("lastScreenTexts", "")
+        set(v) = put("lastScreenTexts", v)
+
     /** Claves del ultimo intent recibido. Solo para diagnosticar en Ajustes. */
     var lastIntentKeys: String
         get() = str("lastIntentKeys", "")

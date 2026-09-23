@@ -270,17 +270,44 @@ Dos trampas de esa pantalla, ya resueltas:
 - Antes aparece `Dejar en: 000000000000788021`, un número de 18 dígitos. Por eso
   solo se lee lo que viene **después** del ancla, nunca antes.
 
+### Quién lee, y por qué no estorba la burbuja
+
+La burbuja **no lee nada**: sólo dibuja. Quien lee es el **servicio de
+accesibilidad**, otra pieza de la misma app que no tiene ventana propia.
+
+Android le entrega el árbol de nodos de la ventana activa. No son píxeles ni
+OCR: son los textos tal como el WMS los publica. Por eso da igual que la burbuja
+tape parte de la pantalla.
+
+Y funciona porque la burbuja **no toma el foco**: la ventana activa sigue siendo
+el WMS, así que es el WMS lo que se lee.
+
+> Esto también explica por qué la lectura se pide **desde la burbuja** y no desde
+> la pantalla de ajustes: si estás dentro de Peso Total, la ventana activa es
+> Peso Total, y lo que se leería son sus propios textos.
+
 **Para activarlo:**
 
 1. Ajustes → campo *Texto antes del peso pedido en el WMS*. Trae
    `Cantidad pendiente`, que es lo correcto para easyWMS.
 2. Marca *Leer el objetivo desde la pantalla del WMS* y guarda.
-3. Comprueba: deja el WMS al frente con una tarea abierta y usa
-   **PRUEBA → Leer la pantalla del WMS**. Arriba sale el veredicto
-   (*Objetivo detectado: 40 kg*) y debajo la lista de textos que vio.
 
-A partir de ahí el objetivo se rellena solo al cambiar de tarea, y la burbuja
-avisa igual que si lo hubieras tecleado.
+A partir de ahí el objetivo se rellena solo: cuando el operario abre una tarea,
+el WMS redibuja, el servicio lee y la burbuja pasa a marcar `0 / 40 kg`.
+
+**Para comprobarlo o ajustar el ancla:**
+
+1. Deja el **WMS al frente** con una tarea abierta.
+2. Abre el panel de la burbuja y **mantén pulsada la línea *Objetivo***. Eso
+   captura la pantalla en ese instante, aplica el objetivo si lo encuentra, y
+   guarda la lista de textos.
+3. Abre Peso Total → **PRUEBA → Ver la última lectura de pantalla**. Arriba sale
+   el veredicto (*Objetivo detectado: 40 kg*) y debajo todo lo que vio.
+4. Si no lo detectó, copia de esa lista el texto que precede al número y pégalo
+   en el campo de anclaje.
+
+La captura a mano funciona **aunque la casilla esté apagada**: es una lectura
+puntual, no una suscripción. Lo que enciende la casilla es el automatismo.
 
 **Si el WMS cambia de pantalla o de idioma** y el ancla deja de calzar, el
 diagnóstico lo dice y basta con cambiar el texto del campo. Sin recompilar.
@@ -326,7 +353,7 @@ caliente únicamente si tú lo activas. Consúltalo con TI antes.
 | El botón dice *Copiar* | La accesibilidad no está activa (o la bloqueó el MDM) |
 | El total entra mal en el WMS | Coma vs punto |
 | No avisa al llegar al peso | No hay objetivo fijado: toca la línea *Objetivo* del panel |
-| *Leer la pantalla* no devuelve nada | La accesibilidad está apagada, o el WMS no está al frente |
+| *Ver la última lectura* sale vacío | Aún no has capturado: mantén pulsada la línea Objetivo en la burbuja, con el WMS al frente |
 | Lee la pantalla pero no detecta el objetivo | El texto de anclaje no calza: cópialo de la lista que sale en el diagnóstico |
 | No habla, solo pita | El terminal no tiene motor de voz o le falta el español. Instala Google TTS y su voz en español, o quédate con el pitido |
 | No se oye nada | Volumen de notificaciones al mínimo, o el aviso hablado está desmarcado |
