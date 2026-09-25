@@ -9,21 +9,25 @@ object Target {
 
     enum class State { SIN_OBJETIVO, FALTA, CERCA, EN_PESO, EXCEDIDO }
 
-    const val DEFAULT_TOLERANCE_KG = 0.5
+    /** La tolerancia es solo hacia abajo. */
+    const val DEFAULT_TOLERANCE_KG = 2.0
     const val DEFAULT_NEAR_KG = 2.0
 
     /**
-     * La banda "en peso" es simetrica alrededor del objetivo, y "cerca" es la
-     * franja de aviso justo por debajo de esa banda. Los margenes se saturan a
-     * cero: un margen negativo escrito por error no debe invertir la logica.
+     * El pedido admite quedar corto hasta `toleranceKg`, pero pasarse por un
+     * gramo ya es exceso: no hay tolerancia hacia arriba.
+     *
+     * "Cerca" es la franja de aviso justo antes de entrar en esa banda. Los
+     * margenes se saturan a cero: uno negativo escrito por error no debe
+     * invertir la logica.
      */
     fun state(total: Double, target: Double, toleranceKg: Double, nearKg: Double): State {
         if (target <= 0.0) return State.SIN_OBJETIVO
-        val tolerance = maxOf(0.0, toleranceKg)
+        val bandStart = target - maxOf(0.0, toleranceKg)
         return when {
-            total > target + tolerance -> State.EXCEDIDO
-            total >= target - tolerance -> State.EN_PESO
-            target - total <= maxOf(0.0, nearKg) -> State.CERCA
+            total > target -> State.EXCEDIDO
+            total >= bandStart -> State.EN_PESO
+            bandStart - total <= maxOf(0.0, nearKg) -> State.CERCA
             else -> State.FALTA
         }
     }

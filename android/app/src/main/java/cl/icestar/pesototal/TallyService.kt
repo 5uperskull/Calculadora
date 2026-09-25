@@ -99,8 +99,11 @@ class TallyService : Service() {
             overlay?.onScanRejected(WeightParser.clean(raw))
             return
         }
-        tally.add(result.kg, result.code)
-        overlay?.onScanAdded(result.kg)
+        if (tally.add(result.kg, result.code)) {
+            overlay?.onScanAdded(result.kg)
+        } else {
+            overlay?.onDuplicate()
+        }
     }
 
     // ------------------------------------------------------------- notificacion

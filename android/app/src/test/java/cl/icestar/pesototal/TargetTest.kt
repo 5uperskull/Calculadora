@@ -6,44 +6,45 @@ import org.junit.Test
 
 class TargetTest {
 
-    // Pedido de 40 kg, banda de 0,5 kg, aviso de cercania a 2 kg.
-    private fun state(total: Double) = Target.state(total, 40.0, 0.5, 2.0)
+    // Pedido de 40 kg, tolerancia de 2 kg solo hacia abajo, aviso 2 kg antes.
+    private fun state(total: Double) = Target.state(total, 40.0, 2.0, 2.0)
 
     @Test
     fun `sin objetivo no opina`() {
-        assertEquals(State.SIN_OBJETIVO, Target.state(12.0, 0.0, 0.5, 2.0))
-        assertEquals(State.SIN_OBJETIVO, Target.state(12.0, -1.0, 0.5, 2.0))
+        assertEquals(State.SIN_OBJETIVO, Target.state(12.0, 0.0, 2.0, 2.0))
+        assertEquals(State.SIN_OBJETIVO, Target.state(12.0, -1.0, 2.0, 2.0))
     }
 
     @Test
     fun `lejos del objetivo falta`() {
         assertEquals(State.FALTA, state(0.0))
-        assertEquals(State.FALTA, state(37.9))
+        assertEquals(State.FALTA, state(35.9))
     }
 
     @Test
-    fun `dentro del aviso de cercania`() {
-        assertEquals(State.CERCA, state(38.0))
-        assertEquals(State.CERCA, state(39.4))
+    fun `aviso de cercania antes de la banda`() {
+        assertEquals(State.CERCA, state(36.0))
+        assertEquals(State.CERCA, state(37.9))
     }
 
     @Test
-    fun `la banda en peso es simetrica`() {
-        assertEquals(State.EN_PESO, state(39.5))
+    fun `en peso hasta 2 kg por debajo`() {
+        assertEquals(State.EN_PESO, state(38.0))
+        assertEquals(State.EN_PESO, state(39.2))
         assertEquals(State.EN_PESO, state(40.0))
-        assertEquals(State.EN_PESO, state(40.5))
     }
 
     @Test
-    fun `pasada la banda esta excedido`() {
-        assertEquals(State.EXCEDIDO, state(40.6))
+    fun `pasarse un gramo ya es exceso`() {
+        assertEquals(State.EXCEDIDO, state(40.001))
+        assertEquals(State.EXCEDIDO, state(40.5))
         assertEquals(State.EXCEDIDO, state(80.0))
     }
 
     @Test
-    fun `sin margen cualquier exceso cuenta`() {
+    fun `sin tolerancia solo el valor exacto esta en peso`() {
         assertEquals(State.EN_PESO, Target.state(40.0, 40.0, 0.0, 2.0))
-        assertEquals(State.EXCEDIDO, Target.state(40.001, 40.0, 0.0, 2.0))
+        assertEquals(State.CERCA, Target.state(39.999, 40.0, 0.0, 2.0))
     }
 
     @Test

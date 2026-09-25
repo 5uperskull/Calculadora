@@ -49,10 +49,37 @@ class Settings(ctx: Context) {
         get() = dbl("targetKg", 0.0)
         set(v) = put("targetKg", v.toString())
 
-    /** Margen simetrico que se considera "en peso". */
+    /**
+     * Cuanto puede quedar corto el pedido y contar como completo.
+     *
+     * Clave nueva a proposito: la vieja era un margen simetrico de 0,5 kg, y
+     * reutilizarla dejaria ese 0,5 con el significado nuevo en los equipos que
+     * ya habian guardado ajustes.
+     */
     var toleranceKg: Double
-        get() = dbl("toleranceKg", Target.DEFAULT_TOLERANCE_KG)
-        set(v) = put("toleranceKg", v.toString())
+        get() = dbl("toleranceBelowKg", Target.DEFAULT_TOLERANCE_KG)
+        set(v) = put("toleranceBelowKg", v.toString())
+
+    /**
+     * Veces que se inserta el mismo total por tarea. El WMS pide el peso,
+     * lo procesa, y lo vuelve a pedir: por defecto, dos.
+     */
+    var insertsPerTask: Int
+        get() = p.getInt("insertsPerTask", 2)
+        set(v) = put("insertsPerTask", v.coerceIn(1, 2))
+
+    /** Inserciones ya hechas de la tarea en curso. Sobrevive a un reinicio. */
+    var insertsDone: Int
+        get() = p.getInt("insertsDone", 0)
+        set(v) = put("insertsDone", v)
+
+    /**
+     * Paquete de la app del WMS, aprendido en la primera captura desde la
+     * burbuja. Sirve para ignorar los eventos de cualquier otra app.
+     */
+    var wmsPackage: String
+        get() = str("wmsPackage", "")
+        set(v) = put("wmsPackage", v)
 
     /** Cuanto antes del objetivo empieza el aviso de cercania. */
     var nearKg: Double

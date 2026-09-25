@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var profileWms: EditText
     private lateinit var comma: CheckBox
     private lateinit var resetAfter: CheckBox
+    private lateinit var twoInserts: CheckBox
     private lateinit var edgeBar: CheckBox
     private lateinit var sound: CheckBox
     private lateinit var screenTarget: CheckBox
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         profileWms = findViewById(R.id.profileWms)
         comma = findViewById(R.id.comma)
         resetAfter = findViewById(R.id.resetAfter)
+        twoInserts = findViewById(R.id.twoInserts)
         edgeBar = findViewById(R.id.edgeBar)
         sound = findViewById(R.id.sound)
         screenTarget = findViewById(R.id.screenTarget)
@@ -135,6 +137,7 @@ class MainActivity : AppCompatActivity() {
         profileWms.setText(s.profileWms)
         comma.isChecked = s.comma
         resetAfter.isChecked = s.resetAfterInsert
+        twoInserts.isChecked = s.insertsPerTask > 1
         edgeBar.isChecked = s.edgeBar
         sound.isChecked = s.sound
         screenTarget.isChecked = s.screenTarget
@@ -154,6 +157,8 @@ class MainActivity : AppCompatActivity() {
         s.profileWms = profileWms.text.toString().trim().ifEmpty { "WMS" }
         s.comma = comma.isChecked
         s.resetAfterInsert = resetAfter.isChecked
+        s.insertsPerTask = if (twoInserts.isChecked) 2 else 1
+        s.insertsDone = 0
         s.edgeBar = edgeBar.isChecked
         s.sound = sound.isChecked
         s.screenTarget = screenTarget.isChecked
@@ -246,6 +251,7 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.st_datawedge, if (DataWedge.isAvailable(this)) yes else no),
             getString(R.string.st_burbuja, if (TallyService.isRunning) yes else no),
             getString(R.string.st_voz, if (Voice.isReady) yes else no),
+            getString(R.string.st_wms, s.wmsPackage.ifEmpty { getString(R.string.ninguno) }),
             getString(
                 R.string.st_ultimo_intent,
                 s.lastIntentKeys.ifEmpty { getString(R.string.ninguno) }

@@ -47,12 +47,18 @@ class Tally(private val store: Store) {
         listeners -= listener
     }
 
-    /** Un codigo repetido se suma igual: dos cajas iguales son dos cajas. */
-    fun add(kg: Double, code: String) {
-        val duplicate = lines.any { it.code == code }
-        lines += Line(WeightParser.round3(kg), code, duplicate)
+    /**
+     * Un codigo ya leido no se suma: solo se avisa. En piso un doble disparo es
+     * mucho mas comun que dos cajas con la misma etiqueta.
+     *
+     * @return false si era repetido y no se sumo.
+     */
+    fun add(kg: Double, code: String): Boolean {
+        if (lines.any { !it.manual && it.code == code }) return false
+        lines += Line(WeightParser.round3(kg), code, duplicate = false)
         undoSnapshot = emptyList()
         commit()
+        return true
     }
 
     /**

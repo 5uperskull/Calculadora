@@ -194,12 +194,26 @@ menú. Ahorra repetir todo esto equipo por equipo.
 
 La burbuja se arrastra a donde estorbe menos y se imanta al borde.
 
+La lista del panel va **en orden de escaneo, de arriba a abajo y numerada**: la
+primera etiqueta arriba, la última abajo, y se desplaza sola para que la última
+siempre se vea.
+
+### Insertar en dos momentos
+
+El WMS pide el peso, lo procesa, y lo vuelve a pedir. Por eso la suma **no se
+cierra en la primera inserción**: el botón dice *Insertar 1/2*, luego
+*Insertar 2/2*, y sólo tras la segunda se reinicia la suma y se borra el
+objetivo. Si escaneas algo entre las dos, la cuenta vuelve a empezar, porque ya
+es otro total.
+
+Se apaga en Ajustes con *Insertar el peso en dos momentos*.
+
 ### Señales de la burbuja
 
 | Señal | Qué significa |
 |---|---|
 | Borde azul | Todo normal |
-| **Borde amarillo y total en amarillo** | La última etiqueta ya se había leído. Se suma igual: si son dos cajas iguales está bien, si fue un doble disparo usa **Deshacer** |
+| **Amarillo unos segundos** | Esa etiqueta ya se había leído. **No se suma**: sólo avisa, vibra doble y dice *"duplicado"* |
 | Chip **SUMA** encendido | Los escaneos alimentan la suma |
 | Chip **WMS** apagado | Los escaneos van al WMS |
 
@@ -246,7 +260,7 @@ pedido.
 | Falta | Borde azul, la línea dice cuánto falta |
 | Cerca | La línea se pone azul claro al entrar en el umbral de cercanía |
 | En peso | Borde y número **verdes**, vibración larga, voz *"completo"* |
-| Excedido | Borde **rojo** grueso, vibración triple, voz *"excedido"* |
+| Excedido | Pastilla **rellena de rojo**, vibración triple, voz *"excedido"* |
 
 La pastilla muestra `34,7 / 40 kg`, así que se lee de reojo sin abrir el panel.
 El exceso manda sobre el aviso de duplicado: es el error que cuesta plata.
@@ -254,9 +268,11 @@ El exceso manda sobre el aviso de duplicado: es el error que cuesta plata.
 Los avisos suenan **solo al cambiar de estado**. Si hablaran en cada escaneo, el
 operario dejaría de oírlos.
 
-**Márgenes** (en Ajustes): *Margen en peso* es la banda simétrica que cuenta como
-completo (±0,5 kg por defecto), y *Aviso de cercanía* es cuántos kg antes empieza
-a avisar (2 kg por defecto).
+**Márgenes** (en Ajustes): *Tolerancia hacia abajo* es cuánto puede quedar
+corto el pedido y contar como completo — 2 kg por defecto, así que un pedido de
+40 kg está en peso entre 38 y 40. **Hacia arriba no hay tolerancia**: pasarse un
+gramo ya es exceso y la pastilla se rellena de rojo. *Aviso de cercanía* es
+cuántos kg antes de esa banda empieza a avisar (2 kg por defecto).
 
 ### Leer el objetivo desde la pantalla del WMS
 
@@ -322,6 +338,38 @@ caliente únicamente si tú lo activas. Consúltalo con TI antes.
 
 > El botón de diagnóstico funciona sin encender esa casilla: es una lectura
 > puntual, no una suscripción.
+
+## Accesibilidad: dejarla encendida
+
+La accesibilidad está pensada para **quedarse encendida todo el turno**. Si hay
+que apagarla y encenderla para que algo funcione, es un error de la app, no un
+paso de uso.
+
+Las versiones anteriores sí estorbaban, por dos motivos que ya están corregidos:
+
+- **Bloqueaba el teclado.** Cuando la inserción por accesibilidad fallaba, la
+  app copiaba al portapapeles y para eso le quitaba el foco al WMS un instante.
+  Android no se lo devolvía solo, y el campo quedaba sin teclado. Ahora copia
+  **sin tocar el foco de nadie**. (Esto se basaba en una afirmación mía que era
+  falsa: Android 10+ impide *leer* el portapapeles en segundo plano, no
+  *escribirlo*.)
+- **Competía con lo que se escribe.** Con la lectura de pantalla activa, cada
+  tecla escrita en el WMS disparaba una relectura, y la propia burbuja también
+  al redibujarse. Ahora se ignoran los cambios de campos de texto y los de la
+  propia app, se escucha sólo al WMS, y el recorrido de la pantalla corre en un
+  hilo aparte que no toca al teclado.
+
+Para insertar en campos tipo página web, que rechazan a menudo la escritura
+directa, ahora selecciona el contenido y **pega** encima — reemplaza el valor
+que el WMS deja precargado.
+
+**La app no puede encenderse la accesibilidad sola** al abrir el WMS: Android lo
+prohíbe a cualquier app normal, precisamente para que nadie la active sin
+permiso. Si se quiere dejar activada en todos los terminales sin tocar cada uno,
+lo hace TI por MDM — en Zebra, con el perfil *AccessMgr* de StageNow.
+
+**La app del WMS se aprende sola** la primera vez que mantienes pulsada la línea
+*Objetivo* con el WMS al frente. Aparece en Ajustes como *App del WMS aprendida*.
 
 ## 6. Calibración
 

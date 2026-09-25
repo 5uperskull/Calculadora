@@ -1,12 +1,11 @@
 package cl.icestar.pesototal
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -89,6 +88,10 @@ class OverlayController(
     }
 
     private val dim = Runnable { root.alpha = dimmedAlpha() }
+    private val endDuplicateFlash = Runnable { render() }
+
+    /** Hasta cuando se mantiene el aviso amarillo de etiqueta repetida. */
+    private var duplicateUntil = 0L
     private val disarmExitLater = Runnable { disarmExit() }
     private val autoCollapse = Runnable { collapse() }
 
@@ -99,7 +102,12 @@ class OverlayController(
         wm.addView(root, params)
         shown = true
         wireUp()
-        changeListener = tally.onChange { handler.post { render() } }
+        changeListener = tally.onChange {
+            // Si la suma cambia entre la primera y la segunda insercion, lo que
+            // se inserte despues ya es otro total: la cuenta vuelve a empezar.
+            settings.insertsDone = 0
+            handler.post { render() }
+        }
         render()
         wake()
     }
@@ -113,15 +121,25 @@ class OverlayController(
         shown = false
     }
 
-    /** Un escaneo aceptado: se ilumina, avisa cuanto entro y vibra. */
+    /** Un escaneo aceptado: dice cuanto entro y vibra corto. */
     fun onScanAdded(kg: Double) {
-        val duplicate = tally.snapshot().lastOrNull()?.duplicate == true
-        status(
-            if (duplicate) ctx.getString(R.string.duplicado)
-            else "+ " + WeightParser.format(kg, settings.comma) + " kg"
-        )
-        buzz(if (duplicate) BUZZ_DUP else BUZZ_OK)
-        if (duplicate && settings.sound) Voice.say(ctx.getString(R.string.voz_duplicado))
+        status("+ " + WeightParser.format(kg, settings.comma) + " kg")
+        buzz(BUZZ_OK)
+        wake()
+    }
+
+    /**
+     * Etiqueta ya leida: no se suma, solo se avisa. La pastilla se pone amarilla
+     * unos segundos y vuelve sola, porque no hay linea nueva que la sostenga.
+     */
+    fun onDuplicate() {
+        duplicateUntil = SystemClock.uptimeMillis() + DUPLICATE_FLASH_MS
+        status(ctx.getString(R.string.duplicado_no_sumado))
+        buzz(BUZZ_DUP)
+        if (settings.sound) Voice.say(ctx.getString(R.string.voz_duplicado))
+        render()
+        handler.removeCallbacks(endDuplicateFlash)
+        handler.postDelayed(endDuplicateFlash, DUPLICATE_FLASH_MS)
         wake()
     }
 
@@ -168,6 +186,11 @@ class OverlayController(
 
         val texts = InsertAccessibilityService.readScreenTexts()
         settings.lastScreenTexts = texts.joinToString(separator = "|")
+        // Desde la burbuja la ventana activa es el WMS: se aprende su paquete
+        // para que la lectura automatica ignore cualquier otra app.
+        InsertAccessibilityService.activePackage()
+            ?.takeIf { it.isNotEmpty() && it != ctx.packageName }
+            ?.let { settings.wmsPackage = it }
 
         val found = TargetScraper.findTarget(texts, settings.targetAnchor)
         if (found == null || found <= 0.0 || found > WeightParser.MAX_KG) {
@@ -247,7 +270,7 @@ class OverlayController(
         summaryView.text = ctx.getString(R.string.resumen, tally.count, totalText)
         renderTargetLine(target, state)
 
-        val duplicate = tally.snapshot().lastOrNull()?.duplicate == true
+        val duplicate = SystemClock.uptimeMillis() < duplicateUntil
         // El exceso manda sobre el duplicado: es el error que cuesta plata.
         pill.setBackgroundResource(
             when {
@@ -260,7 +283,8 @@ class OverlayController(
         totalView.setTextColor(
             ctx.getColor(
                 when {
-                    state == Target.State.EXCEDIDO -> R.color.coral
+                    // Sobre el relleno rojo, blanco: el rojo sobre rojo no se leia.
+                    state == Target.State.EXCEDIDO -> R.color.white
                     state == Target.State.EN_PESO -> R.color.green
                     duplicate -> R.color.amber
                     else -> R.color.txt
@@ -275,9 +299,15 @@ class OverlayController(
         // El chip apagado es gris oscuro: el texto oscuro del XML no se leeria.
         modeChip.setTextColor(ctx.getColor(if (settings.sumMode) R.color.bg else R.color.txt))
 
-        btnInsert.text = ctx.getString(
+        val action = ctx.getString(
             if (InsertAccessibilityService.isRunning) R.string.insertar else R.string.copiar
         )
+        val steps = settings.insertsPerTask
+        btnInsert.text = if (steps > 1) {
+            ctx.getString(R.string.accion_paso, action, settings.insertsDone + 1, steps)
+        } else {
+            action
+        }
 
         // El modo barra de borde solo estrecha la pastilla: el conteo se va.
         countView.visibility = if (settings.edgeBar && !expanded) View.GONE else View.VISIBLE
@@ -348,12 +378,17 @@ class OverlayController(
         linesBox.removeAllViews()
         val rows = tally.snapshot()
         if (rows.isEmpty()) {
-            linesBox.addView(rowView(ctx.getString(R.string.sin_lineas), "", false, false, null))
+            linesBox.addView(
+                rowView("", ctx.getString(R.string.sin_lineas), "", false, false, null)
+            )
             return
         }
+        // Orden de escaneo de arriba a abajo, numerado: la primera etiqueta
+        // leida arriba y la ultima abajo, que es donde se mira.
         rows.forEachIndexed { index, line ->
             linesBox.addView(
                 rowView(
+                    (index + 1).toString(),
                     WeightParser.format(line.kg, settings.comma) + " kg",
                     if (line.manual) ctx.getString(R.string.manual) else line.code,
                     line.duplicate,
@@ -364,9 +399,13 @@ class OverlayController(
                 }
             )
         }
+        // Con muchas lineas la ultima quedaba bajo el pliegue y no se veia lo
+        // recien escaneado.
+        linesScroll.post { linesScroll.scrollTo(0, linesBox.bottom) }
     }
 
     private fun rowView(
+        number: String,
         left: String,
         right: String,
         duplicate: Boolean,
@@ -374,6 +413,7 @@ class OverlayController(
         onDelete: (() -> Unit)?
     ): View {
         val row = LayoutInflater.from(ctx).inflate(R.layout.overlay_line, linesBox, false)
+        row.findViewById<TextView>(R.id.lineNum).text = number
         val kg = row.findViewById<TextView>(R.id.lineKg)
         kg.text = left
         if (duplicate) kg.setTextColor(ctx.getColor(R.color.amber))
@@ -568,16 +608,29 @@ class OverlayController(
             return
         }
 
-        copyWithFocus(text) { ok ->
-            status(
-                if (ok) ctx.getString(R.string.copiado, text)
-                else ctx.getString(R.string.no_se_pudo_copiar)
-            )
-            if (ok) afterInsert()
+        // Sin accesibilidad: al portapapeles, y el operario pega. Sin tocar el
+        // foco de nadie, asi el cursor del WMS sigue donde estaba.
+        if (InsertAccessibilityService.copy(ctx, text)) {
+            status(ctx.getString(R.string.copiado, text))
+            afterInsert()
+        } else {
+            status(ctx.getString(R.string.no_se_pudo_copiar))
         }
     }
 
+    /**
+     * El WMS pide el peso, lo procesa, y vuelve a pedir el mismo. Por eso la
+     * suma no se cierra en la primera insercion sino en la ultima.
+     */
     private fun afterInsert() {
+        val done = settings.insertsDone + 1
+        if (done < settings.insertsPerTask) {
+            settings.insertsDone = done
+            render()
+            wake()
+            return
+        }
+        settings.insertsDone = 0
         if (settings.resetAfterInsert) {
             tally.reset()
             // La tarea siguiente trae otro pedido: arrastrar el objetivo viejo
@@ -604,28 +657,6 @@ class OverlayController(
         exitArmed = false
         btnClose.setText(R.string.salir)
         btnClose.setTextColor(ctx.getColor(R.color.dim))
-    }
-
-    /**
-     * Android 10+ ignora la escritura al portapapeles si la app no tiene foco.
-     * Se lo damos por un instante y lo devolvemos enseguida, para no dejar al
-     * WMS sin foco mas tiempo del imprescindible.
-     */
-    private fun copyWithFocus(text: String, done: (Boolean) -> Unit) {
-        params.flags = params.flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
-        wm.updateViewLayout(root, params)
-        root.post {
-            val ok = try {
-                val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText("peso", text))
-                true
-            } catch (e: Exception) {
-                false
-            }
-            params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            wm.updateViewLayout(root, params)
-            done(ok)
-        }
     }
 
     // ------------------------------------------------------------ presencia
@@ -703,6 +734,7 @@ class OverlayController(
         val BUZZ_TARGET = longArrayOf(0, 220)
         val BUZZ_OVER = longArrayOf(0, 120, 80, 120, 80, 120)
 
+        const val DUPLICATE_FLASH_MS = 3_000L
         const val DIM_DELAY_MS = 4_000L
         const val EXIT_CONFIRM_MS = 3_000L
         const val AUTO_COLLAPSE_MS = 12_000L

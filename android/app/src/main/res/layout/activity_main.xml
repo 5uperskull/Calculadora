@@ -250,7 +250,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/bg_field"
-                android:hint="Margen en peso (kg)"
+                android:hint="Tolerancia hacia abajo (kg)"
                 android:inputType="numberDecimal"
                 android:padding="10dp"
                 android:textColor="@color/txt"
@@ -276,6 +276,14 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Separador decimal coma (11,5)"
+            android:textColor="@color/txt"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/twoInserts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Insertar el peso en dos momentos (el WMS lo pide dos veces)"
             android:textColor="@color/txt"
             android:textSize="13sp" />
 

@@ -57,12 +57,29 @@ class TallyTest {
     }
 
     @Test
-    fun `codigo repetido se suma igual pero queda marcado`() {
+    fun `codigo repetido no se suma`() {
         val t = Tally(MemStore())
-        t.add(11.5, "A"); t.add(11.5, "A")
+        assertTrue(t.add(11.5, "A"))
+        assertFalse(t.add(11.5, "A"))
+        assertEquals(11.5, t.total, 0.0)
+        assertEquals(1, t.count)
+    }
+
+    @Test
+    fun `tras deshacer el mismo codigo vuelve a entrar`() {
+        val t = Tally(MemStore())
+        t.add(11.5, "A")
+        t.undo()
+        assertTrue(t.add(11.5, "A"))
+        assertEquals(11.5, t.total, 0.0)
+    }
+
+    @Test
+    fun `un peso manual no bloquea una etiqueta real`() {
+        val t = Tally(MemStore())
+        t.addManual(11.5)
+        assertTrue(t.add(11.5, Tally.MANUAL_CODE))
         assertEquals(23.0, t.total, 0.0)
-        assertFalse(t.snapshot()[0].duplicate)
-        assertTrue(t.snapshot()[1].duplicate)
     }
 
     @Test

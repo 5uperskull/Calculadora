@@ -16,4 +16,6 @@
     <color name="amber">#FFC400</color>
     <color name="coral">#FF6B5E</color>
     <color name="green">#3FBF6B</color>
+    <color name="white">#FFFFFF</color>
+    <color name="red">#D32F2F</color>
 </resources>
