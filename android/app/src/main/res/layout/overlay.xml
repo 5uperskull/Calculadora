@@ -121,6 +121,19 @@
                 android:textSize="14sp" />
 
             <Button
+                android:id="@+id/btnCamera"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_button"
+                android:text="@string/camara"
+                android:textColor="@color/ice"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textSize="12sp" />
+
+            <Button
                 android:id="@+id/btnManual"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
@@ -129,7 +142,9 @@
                 android:background="@drawable/bg_button"
                 android:text="@string/manual"
                 android:textColor="@color/ice"
-                android:textSize="13sp" />
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <LinearLayout

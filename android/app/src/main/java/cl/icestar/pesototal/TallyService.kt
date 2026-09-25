@@ -49,6 +49,7 @@ class TallyService : Service() {
             it.show()
         }
         InsertAccessibilityService.onTargetDetected = { kg -> overlay?.onTargetDetected(kg) }
+        cameraHandler = { raw -> onScan(raw, fromCamera = true) }
 
         receiver = ScanReceiver(
             onScan = { raw -> onScan(raw) },
@@ -72,6 +73,7 @@ class TallyService : Service() {
     override fun onDestroy() {
         isRunning = false
         InsertAccessibilityService.onTargetDetected = null
+        cameraHandler = null
         Voice.stop()
         restoreKeystroke()
         changeListener?.let { tally.removeChange(it) }
@@ -90,9 +92,13 @@ class TallyService : Service() {
         }
     }
 
-    private fun onScan(raw: String) {
-        // En modo WMS el codigo es del WMS: no lo tocamos.
-        if (!settings.sumMode) return
+    /**
+     * @param fromCamera la camara siempre suma: no hay campo del WMS al que
+     * mandar el codigo, asi que el modo WMS no tiene sentido para ella.
+     */
+    private fun onScan(raw: String, fromCamera: Boolean = false) {
+        // En modo WMS el codigo del lector es del WMS: no lo tocamos.
+        if (!settings.sumMode && !fromCamera) return
 
         val result = WeightParser.parse(raw, settings.offset, settings.len)
         if (result == null) {
@@ -145,6 +151,16 @@ class TallyService : Service() {
     companion object {
         private const val CHANNEL = "burbuja"
         private const val NOTIF_ID = 1
+
+        @Volatile
+        private var cameraHandler: ((String) -> Unit)? = null
+
+        /** false = la burbuja no esta corriendo y nadie recibe el codigo. */
+        fun handleCameraScan(raw: String): Boolean {
+            val handler = cameraHandler ?: return false
+            handler(raw)
+            return true
+        }
 
         /** Lo consulta la pantalla de ajustes; no hay forma barata de saberlo si no. */
         @Volatile

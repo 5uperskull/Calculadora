@@ -33,6 +33,14 @@
             </intent-filter>
         </activity>
 
+        <!-- Sin afinidad de tarea: al cerrarse vuelve el WMS, no los ajustes. -->
+        <activity
+            android:name=".CameraScanActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <service
             android:name=".TallyService"
             android:exported="false" />

@@ -194,9 +194,25 @@ menú. Ahorra repetir todo esto equipo por equipo.
 
 La burbuja se arrastra a donde estorbe menos y se imanta al borde.
 
-La lista del panel va **en orden de escaneo, de arriba a abajo y numerada**: la
-primera etiqueta arriba, la última abajo, y se desplaza sola para que la última
-siempre se vea.
+La lista del panel muestra **la última etiqueta arriba**. Cada línea lleva su
+número de escaneo, así que invertida no pierde la secuencia: la de arriba es la
+de número más alto.
+
+### Leer con la cámara del celular
+
+Para probar sin terminal RF. En el panel, botón **Cámara**: se abre el escáner de
+Google, apuntas a la etiqueta, y el peso entra a la suma como si lo hubiera
+leído la pistola — mismas reglas de duplicado, objetivo y alertas.
+
+- **Siempre suma**, esté el chip en WMS o en SUMA: la cámara no tiene un campo
+  del WMS al que mandar el código, así que el modo WMS no aplica.
+- **No pide permiso de cámara** a la app: la cámara la maneja Google Play
+  Services con su propia pantalla. Al cerrar, vuelve el WMS.
+- Necesita **Google Play Services** (todos los celulares con Play Store lo
+  tienen; algunas terminales Zebra sin GMS no) e **internet la primera vez**,
+  para bajar el módulo del escáner.
+- La burbuja tiene que estar activa: si no, el código se lee pero avisa que no
+  se sumó.
 
 ### Insertar en dos momentos
 

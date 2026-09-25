@@ -1,6 +1,7 @@
 package cl.icestar.pesototal
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
@@ -47,6 +48,7 @@ class OverlayController(
     private val btnInsert: Button = root.findViewById(R.id.btnInsert)
     private val btnClose: Button = root.findViewById(R.id.btnClose)
     private val btnManual: Button = root.findViewById(R.id.btnManual)
+    private val btnCamera: Button = root.findViewById(R.id.btnCamera)
     private val keypad: View = root.findViewById(R.id.keypad)
     private val linesScroll: View = root.findViewById(R.id.linesScroll)
     private val primaryRow: View = root.findViewById(R.id.primaryRow)
@@ -243,6 +245,7 @@ class OverlayController(
         btnClose.setOnClickListener { if (exitArmed) onExit?.invoke() else armExit() }
 
         btnManual.setOnClickListener { openManual() }
+        btnCamera.setOnClickListener { openCamera() }
         targetLine.setOnClickListener { openTarget() }
         targetLine.setOnLongClickListener {
             scanScreenNow()
@@ -383,9 +386,9 @@ class OverlayController(
             )
             return
         }
-        // Orden de escaneo de arriba a abajo, numerado: la primera etiqueta
-        // leida arriba y la ultima abajo, que es donde se mira.
-        rows.forEachIndexed { index, line ->
+        // La ultima leida arriba, que es donde se mira. El numero sigue siendo
+        // el orden de escaneo, asi la lista invertida no pierde la secuencia.
+        rows.withIndex().reversed().forEach { (index, line) ->
             linesBox.addView(
                 rowView(
                     (index + 1).toString(),
@@ -399,9 +402,9 @@ class OverlayController(
                 }
             )
         }
-        // Con muchas lineas la ultima quedaba bajo el pliegue y no se veia lo
-        // recien escaneado.
-        linesScroll.post { linesScroll.scrollTo(0, linesBox.bottom) }
+        // Si el operario habia bajado a revisar, lo recien escaneado vuelve a
+        // quedar a la vista.
+        linesScroll.post { linesScroll.scrollTo(0, 0) }
     }
 
     private fun rowView(
@@ -452,6 +455,20 @@ class OverlayController(
      * ventana sin foco, asi que el cursor del WMS no se mueve ni sube el teclado
      * del sistema tapando media pantalla.
      */
+    /**
+     * La burbuja tiene permiso de superposicion, y eso la exime del bloqueo de
+     * Android a abrir actividades desde segundo plano.
+     */
+    private fun openCamera() {
+        val intent = Intent(ctx, CameraScanActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            ctx.startActivity(intent)
+        } catch (e: Exception) {
+            status(ctx.getString(R.string.camara_no_disponible))
+        }
+    }
+
     private fun openManual() {
         typingTarget = false
         openKeypad()

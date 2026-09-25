@@ -8,6 +8,9 @@
     <string name="reiniciar">Reiniciar</string>
     <string name="cerrar">Cerrar</string>
     <string name="manual">Manual</string>
+    <string name="camara">Cámara</string>
+    <string name="camara_no_disponible">No se pudo abrir el escáner de cámara. Necesita Google Play Services, e internet la primera vez.</string>
+    <string name="camara_sin_burbuja">La burbuja no está activa: el código no se sumó.</string>
     <string name="agregar">Agregar</string>
     <string name="cancelar">Cancelar</string>
     <string name="manual_hint">Teclea el peso en kg</string>
