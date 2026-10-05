@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity() {
             // Arranca el motor aunque la burbuja este apagada: probar la voz es
             // justo lo que se hace antes de desplegar.
             Voice.start(this)
-            Voice.say(getString(R.string.voz_prueba))
+            Voice.say(Voice.Clip.DUPLICADO)
             status.postDelayed({ refresh() }, 1500)
         }
 
@@ -252,6 +252,10 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.st_burbuja, if (TallyService.isRunning) yes else no),
             getString(R.string.st_voz, if (Voice.isReady) yes else no),
             getString(R.string.st_wms, s.wmsPackage.ifEmpty { getString(R.string.ninguno) }),
+            getString(
+                R.string.st_dw,
+                s.lastDataWedgeResult.ifEmpty { getString(R.string.ninguno) }
+            ),
             getString(
                 R.string.st_ultimo_intent,
                 s.lastIntentKeys.ifEmpty { getString(R.string.ninguno) }

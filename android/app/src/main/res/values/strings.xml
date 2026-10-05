@@ -24,13 +24,11 @@
     <string name="objetivo_detectado">Objetivo leído del WMS: %1$s kg</string>
     <string name="pantalla_detectado">Objetivo detectado: %1$s kg</string>
     <string name="pantalla_no_detectado">No se encontró el objetivo. Revisa el texto de anclaje.</string>
-    <string name="voz_completo">Completo</string>
     <string name="pantalla_sin_accesibilidad">Accesibilidad apagada: actívala para poder leer la pantalla</string>
     <string name="pantalla_vacia">No se leyó ningún texto</string>
     <string name="pantalla_sin_captura">Todavía no hay ninguna lectura.
 
 En la burbuja, con el WMS al frente, mantén pulsada la línea Objetivo del panel.</string>
-    <string name="voz_excedido">Excedido</string>
     <string name="manual_invalido">Peso no válido</string>
     <string name="manual_agregado">+ %1$s kg a mano</string>
     <string name="salir">Salir</string>
@@ -39,12 +37,13 @@ En la burbuja, con el WMS al frente, mantén pulsada la línea Objetivo del pane
     <string name="duplicado">Etiqueta repetida</string>
     <string name="duplicado_no_sumado">Etiqueta repetida: no se sumó</string>
     <string name="accion_paso">%1$s %2$d/%3$d</string>
-    <string name="voz_duplicado">Duplicado</string>
-    <string name="voz_sin_peso">Sin peso</string>
-    <string name="voz_prueba">Duplicado. Voz lista.</string>
     <string name="st_voz">Voz disponible: %1$s</string>
     <string name="st_burbuja">Burbuja activa: %1$s</string>
     <string name="st_wms">App del WMS aprendida: %1$s</string>
+    <string name="st_dw">Último corte de teclado: %1$s</string>
+    <string name="dw_ok">aceptado</string>
+    <string name="dw_rechazado">RECHAZADO</string>
+    <string name="dw_fallo">DataWedge no cortó el teclado (%1$s). Revisa el nombre del perfil en Ajustes.</string>
     <string name="resumen">%1$d etiquetas · %2$s kg</string>
     <string name="version">Versión %1$s</string>
 

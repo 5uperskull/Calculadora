@@ -123,12 +123,12 @@ class Settings(ctx: Context) {
      * escribiendose, no descubrirlo despues.
      */
     var cutKeystroke: Boolean
-        get() = p.getBoolean("cutKeystroke", false)
+        get() = p.getBoolean("cutKeystroke", true)
         set(v) = put("cutKeystroke", v)
 
     /** Perfil de DataWedge asociado al WMS: es el que se modifica en caliente. */
     var profileWms: String
-        get() = str("profileWms", "WMS")
+        get() = str("profileWms", DataWedge.PROFILE0)
         set(v) = put("profileWms", v)
 
     /** false = el escaneo va al WMS. true = alimenta la suma. */
@@ -144,6 +144,11 @@ class Settings(ctx: Context) {
     var lastScreenTexts: String
         get() = str("lastScreenTexts", "")
         set(v) = put("lastScreenTexts", v)
+
+    /** Respuesta de DataWedge al ultimo corte de teclado. Para Ajustes. */
+    var lastDataWedgeResult: String
+        get() = str("lastDataWedgeResult", "")
+        set(v) = put("lastDataWedgeResult", v)
 
     /** Claves del ultimo intent recibido. Solo para diagnosticar en Ajustes. */
     var lastIntentKeys: String

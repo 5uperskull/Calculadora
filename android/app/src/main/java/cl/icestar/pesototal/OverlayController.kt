@@ -138,7 +138,7 @@ class OverlayController(
         duplicateUntil = SystemClock.uptimeMillis() + DUPLICATE_FLASH_MS
         status(ctx.getString(R.string.duplicado_no_sumado))
         buzz(BUZZ_DUP)
-        if (settings.sound) Voice.say(ctx.getString(R.string.voz_duplicado))
+        if (settings.sound) Voice.say(Voice.Clip.DUPLICADO)
         render()
         handler.removeCallbacks(endDuplicateFlash)
         handler.postDelayed(endDuplicateFlash, DUPLICATE_FLASH_MS)
@@ -221,10 +221,17 @@ class OverlayController(
         wake()
     }
 
+    /** DataWedge rechazo el corte: el codigo seguira llegando al WMS. */
+    fun onDataWedgeFailed(detail: String) {
+        status(ctx.getString(R.string.dw_fallo, detail.ifBlank { "sin detalle" }))
+        buzz(BUZZ_DUP)
+        wake()
+    }
+
     fun onScanRejected(code: String) {
         Toast.makeText(ctx, ctx.getString(R.string.sin_peso, code), Toast.LENGTH_SHORT).show()
         buzz(BUZZ_DUP)
-        if (settings.sound) Voice.say(ctx.getString(R.string.voz_sin_peso))
+        if (settings.sound) Voice.say(Voice.Clip.SIN_PESO)
         wake()
     }
 
@@ -366,11 +373,11 @@ class OverlayController(
         when (state) {
             Target.State.EN_PESO -> {
                 buzz(BUZZ_TARGET)
-                if (settings.sound) Voice.say(ctx.getString(R.string.voz_completo))
+                if (settings.sound) Voice.say(Voice.Clip.COMPLETO)
             }
             Target.State.EXCEDIDO -> {
                 buzz(BUZZ_OVER)
-                if (settings.sound) Voice.say(ctx.getString(R.string.voz_excedido))
+                if (settings.sound) Voice.say(Voice.Clip.EXCEDIDO)
             }
             else -> Unit
         }

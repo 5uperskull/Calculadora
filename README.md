@@ -119,10 +119,13 @@ Configura un único perfil, el asociado a la app del WMS:
 
 En la app:
 
-1. Campo *Nombre del perfil asociado al WMS*: escribe el nombre **exacto** del
-   perfil, tal como aparece en la lista de DataWedge. Si no calza, el corte no
-   hace nada.
-2. Marca **En modo SUMA, cortar la salida de teclado del lector**.
+1. Campo *Nombre del perfil asociado al WMS*: viene con **`Profile0 (default)`**,
+   el perfil por defecto de Zebra. Ojo: en la pantalla de DataWedge se ve como
+   `Profile0`, pero para la API se llama `Profile0 (default)`; si escribes
+   `Profile0` la app lo traduce sola. Si tu WMS usa otro perfil, escribe su
+   nombre exacto.
+2. La casilla **En modo SUMA, cortar la salida de teclado del lector** viene
+   **marcada** por defecto.
 3. **Guardar y reiniciar burbuja**.
 
 Ahora el operario puede dejar el cursor dentro del textbox del WMS: en modo
@@ -131,9 +134,10 @@ a escribirse como siempre.
 
 ### Si el terminal no acepta el corte
 
-DataWedge no contesta si aceptó el cambio, así que la app no puede confirmarlo.
-Lo ves al primer escaneo: si en modo SUMA el código igual se escribe en el
-campo, ese terminal no acepta `SET_CONFIG`. Desmarca la casilla y trabaja con
+La app le pide a DataWedge que **conteste** si aceptó el corte. Si lo rechaza
+—casi siempre por un nombre de perfil que no existe— la burbuja lo avisa en el
+momento, y queda anotado en Ajustes como *Último corte de teclado*. Si aun así
+el terminal no acepta `SET_CONFIG`, desmarca la casilla y trabaja con
 las dos salidas encendidas — se suma bien, pero hay que limpiar el campo del
 WMS a mano.
 
@@ -395,10 +399,12 @@ lo hace TI por MDM — en Zebra, con el perfil *AccessMgr* de StageNow.
 - **Separador decimal:** coma por defecto. Si el WMS rechaza el valor, cámbialo
   a punto.
 - **Opacidad y modo barra de borde:** para que estorbe menos.
-- **Aviso hablado:** encendido por defecto. Dice *"Duplicado"* y *"Sin peso"*
-  por el canal de notificaciones. Si el terminal no trae motor de voz o le falta
-  el español, cae a un pitido — compruébalo con **Probar la voz** antes de
-  desplegar, y mira la línea *Voz disponible* del estado.
+- **Aviso hablado:** encendido por defecto. Los audios (*duplicado*, *sin
+  peso*, *completo*, *excedido*) van **grabados dentro del APK**: no dependen
+  del motor de voz del equipo, que en terminales como la Zebra MC3401 no viene o
+  viene sin español. Suenan por el **canal de alarma**, porque en bodega el de
+  notificaciones suele estar bajado. Si no se oye nada, sube el volumen de
+  **alarma** del equipo y prueba con **Probar la voz**.
 - **Cortar la salida de teclado en modo SUMA:** apagado por defecto. Enciéndelo
   cuando el operario necesite escanear con el cursor dentro del textbox del WMS
   sin que el código se escriba ahí. Requiere que el *Nombre del perfil asociado
@@ -419,8 +425,8 @@ lo hace TI por MDM — en Zebra, con el perfil *AccessMgr* de StageNow.
 | No avisa al llegar al peso | No hay objetivo fijado: toca la línea *Objetivo* del panel |
 | *Ver la última lectura* sale vacío | Aún no has capturado: mantén pulsada la línea Objetivo en la burbuja, con el WMS al frente |
 | Lee la pantalla pero no detecta el objetivo | El texto de anclaje no calza: cópialo de la lista que sale en el diagnóstico |
-| No habla, solo pita | El terminal no tiene motor de voz o le falta el español. Instala Google TTS y su voz en español, o quédate con el pitido |
-| No se oye nada | Volumen de notificaciones al mínimo, o el aviso hablado está desmarcado |
+| No se oye nada | Volumen de **alarma** al mínimo, o el aviso hablado está desmarcado |
+| En SUMA el código igual entra al WMS | Mira *Último corte de teclado* en Ajustes: si dice RECHAZADO, el nombre del perfil no es el de DataWedge |
 
 ## Banco de pruebas
 

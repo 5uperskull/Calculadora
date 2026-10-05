@@ -21,6 +21,31 @@ object DataWedge {
     private const val PKG = "com.symbol.datawedge"
     private const val API_ACTION = "com.symbol.datawedge.api.ACTION"
     private const val SET_CONFIG = "com.symbol.datawedge.api.SET_CONFIG"
+    private const val COMMAND_ID = "peso_corte_teclado"
+
+    const val RESULT_ACTION = "com.symbol.datawedge.api.RESULT_ACTION"
+
+    /**
+     * En la pantalla de DataWedge se ve "Profile0", pero para la API se llama
+     * "Profile0 (default)". Con el nombre corto el comando se ignora sin dar
+     * error, que es exactamente como se ve "el modo SUMA no bloquea".
+     */
+    const val PROFILE0 = "Profile0 (default)"
+
+    fun profileName(raw: String): String {
+        val name = raw.trim()
+        return if (name.equals("Profile0", ignoreCase = true)) PROFILE0 else name
+    }
+
+    /** Respuesta de DataWedge a nuestro corte; null si es de otro comando. */
+    fun describeResult(intent: Intent): Pair<Boolean, String>? {
+        if (intent.getStringExtra("COMMAND_IDENTIFIER") != COMMAND_ID) return null
+        val ok = intent.getStringExtra("RESULT") == "SUCCESS"
+        val info = intent.getBundleExtra("RESULT_INFO")
+        @Suppress("DEPRECATION")
+        val detail = info?.keySet()?.joinToString { key -> key + "=" + info.get(key) }
+        return ok to detail.orEmpty()
+    }
 
     fun isAvailable(ctx: Context): Boolean = try {
         ctx.packageManager.getPackageInfo(PKG, 0)
@@ -51,14 +76,19 @@ object DataWedge {
             putBundle("PARAM_LIST", params)
         }
         val config = Bundle().apply {
-            putString("PROFILE_NAME", profile)
+            putString("PROFILE_NAME", profileName(profile))
             putString("PROFILE_ENABLED", "true")
             putString("CONFIG_MODE", "UPDATE")
             putBundle("PLUGIN_CONFIG", plugin)
         }
 
+        // Se pide respuesta: sin ella un corte rechazado era invisible.
         ctx.sendBroadcast(
-            Intent(API_ACTION).setPackage(PKG).putExtra(SET_CONFIG, config)
+            Intent(API_ACTION)
+                .setPackage(PKG)
+                .putExtra(SET_CONFIG, config)
+                .putExtra("SEND_RESULT", "true")
+                .putExtra("COMMAND_IDENTIFIER", COMMAND_ID)
         )
         return true
     }

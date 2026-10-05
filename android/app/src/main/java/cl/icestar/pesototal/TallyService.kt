@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -25,6 +26,7 @@ class TallyService : Service() {
     private lateinit var tally: Tally
     private var overlay: OverlayController? = null
     private var receiver: ScanReceiver? = null
+    private var dataWedgeReceiver: BroadcastReceiver? = null
     private var changeListener: (() -> Unit)? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -36,6 +38,7 @@ class TallyService : Service() {
         tally = PesoApp.instance.tally
 
         Voice.start(this)
+        listenToDataWedge()
         createChannel()
         startForeground(NOTIF_ID, buildNotification())
 
@@ -79,10 +82,33 @@ class TallyService : Service() {
         changeListener?.let { tally.removeChange(it) }
         changeListener = null
         receiver?.let { runCatching { unregisterReceiver(it) } }
+        dataWedgeReceiver?.let { runCatching { unregisterReceiver(it) } }
+        dataWedgeReceiver = null
         receiver = null
         overlay?.hide()
         overlay = null
         super.onDestroy()
+    }
+
+    /**
+     * DataWedge contesta si acepto el corte de teclado. Un perfil mal escrito
+     * o un comando rechazado antes no se notaba; ahora sale en la burbuja.
+     */
+    private fun listenToDataWedge() {
+        val listener = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val (ok, detail) = DataWedge.describeResult(intent) ?: return
+                val label = getString(if (ok) R.string.dw_ok else R.string.dw_rechazado)
+                settings.lastDataWedgeResult =
+                    if (detail.isBlank()) label else "$label · $detail"
+                if (!ok) overlay?.onDataWedgeFailed(detail)
+            }
+        }
+        val filter = IntentFilter(DataWedge.RESULT_ACTION).apply {
+            addCategory(Intent.CATEGORY_DEFAULT)
+        }
+        ContextCompat.registerReceiver(this, listener, filter, ContextCompat.RECEIVER_EXPORTED)
+        dataWedgeReceiver = listener
     }
 
     /** Nunca dejar el lector sin teclado si nosotros ya no estamos. */
