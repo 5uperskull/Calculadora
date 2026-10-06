@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Generado por gen_layout.py. Dos niveles: lo que usa el operario arriba, a
+     la vista; todo lo demas detras de la contrasena de configuracion. -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg">
+    android:background="@color/white"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -10,398 +13,637 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textColor="@color/txt"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/version"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textColor="@color/dim"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/status"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_field"
-            android:fontFamily="monospace"
-            android:padding="10dp"
-            android:textColor="@color/dim"
-            android:textSize="12sp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@null"
+                android:src="@mipmap/ic_launcher_fg" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textColor="@color/corp_navy"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/version"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/corp_muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Linea de marca: azul y amarillo en la proporcion de la plantilla. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="74"
+                android:background="@color/corp_blue" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="3dp"
+                android:layout_weight="14"
+                android:background="@color/corp_yellow" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="6" />
+        </LinearLayout>
+
+        <!-- Solo aparece si falta un permiso: sin el, nada de lo de abajo sirve. -->
+        <LinearLayout
+            android:id="@+id/permCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card_warn"
+            android:orientation="vertical"
+            android:padding="14dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Falta un permiso"
+                android:textColor="@color/corp_red"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/permText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/corp_body"
+                android:textSize="13sp" />
 
         <Button
             android:id="@+id/btnOverlay"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/bg_button"
-            android:text="Permiso: mostrar sobre otras apps"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_light"
+            android:text="Permitir mostrar sobre otras apps"
+            android:textAllCaps="false"
+            android:textColor="@color/corp_navy"
+            android:textSize="14sp" />
         <Button
             android:id="@+id/btnAccess"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_button"
-            android:text="Activar accesibilidad (para insertar solo)"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnStart"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_button"
-                android:text="Mostrar burbuja"
-                android:textColor="@color/ice"
-                android:textSize="13sp" />
-
-            <Button
-                android:id="@+id/btnStop"
-                android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_button"
-                android:text="Ocultar"
-                android:textColor="@color/dim"
-                android:textSize="13sp" />
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_light"
+            android:text="Activar accesibilidad"
+            android:textAllCaps="false"
+            android:textColor="@color/corp_navy"
+            android:textSize="14sp" />
         </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="LECTOR"
-            android:textColor="@color/dim"
+            android:layout_marginBottom="6dp"
+            android:letterSpacing="0.08"
+            android:text="OPERACIÓN"
+            android:textColor="@color/corp_muted"
             android:textSize="12sp"
             android:textStyle="bold" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_light"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="72dp"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Burbuja"
+                        android:textColor="@color/corp_navy"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Muestra la suma encima del WMS"
+                        android:textColor="@color/corp_muted"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swBubble"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:minWidth="64dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="16dp"
+                android:background="@color/corp_border" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="72dp"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pegar dos veces"
+                        android:textColor="@color/corp_navy"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="El WMS pide el mismo peso dos veces"
+                        android:textColor="@color/corp_muted"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swTwoInserts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:minWidth="64dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="16dp"
+                android:background="@color/corp_border" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="72dp"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="12dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Botón de cámara"
+                        android:textColor="@color/corp_navy"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Leer etiquetas con la cámara del equipo"
+                        android:textColor="@color/corp_muted"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/swCamera"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:minWidth="64dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/advancedHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_card_light"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:minHeight="56dp"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Configuración avanzada"
+                android:textColor="@color/corp_navy"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/advancedState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/corp_muted"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/advanced"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:letterSpacing="0.08"
+            android:text="ESTADO"
+            android:textColor="@color/corp_muted"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card_light"
+            android:fontFamily="monospace"
+            android:padding="12dp"
+            android:textColor="@color/corp_body"
+            android:textSize="12sp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:letterSpacing="0.08"
+            android:text="LECTOR"
+            android:textColor="@color/corp_muted"
+            android:textSize="12sp"
+            android:textStyle="bold" />
         <EditText
             android:id="@+id/action"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="@drawable/bg_field"
+            android:background="@drawable/bg_field_light"
             android:hint="Acción del intent"
             android:inputType="text"
-            android:padding="10dp"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
         <EditText
             android:id="@+id/extra"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="@drawable/bg_field"
+            android:background="@drawable/bg_field_light"
             android:hint="Nombre del extra"
             android:inputType="text"
-            android:padding="10dp"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
-
+            android:orientation="horizontal"
+            android:baselineAligned="false">
             <Button
                 android:id="@+id/btnZebra"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:background="@drawable/bg_button"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_button_light"
                 android:text="Preset Zebra"
-                android:textColor="@color/txt"
-                android:textSize="12sp" />
-
+                android:textAllCaps="false"
+                android:textColor="@color/corp_navy"
+                android:textSize="14sp" />
             <Button
                 android:id="@+id/btnHoneywell"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/bg_button"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_button_light"
                 android:text="Preset Honeywell"
-                android:textColor="@color/txt"
-                android:textSize="12sp" />
+                android:textAllCaps="false"
+                android:textColor="@color/corp_navy"
+                android:textSize="14sp" />
         </LinearLayout>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:letterSpacing="0.08"
             android:text="PERFIL DE DATAWEDGE"
-            android:textColor="@color/dim"
+            android:textColor="@color/corp_muted"
             android:textSize="12sp"
             android:textStyle="bold" />
-
-        <LinearLayout
+        <EditText
+            android:id="@+id/profileWms"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/profileWms"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_field"
-                android:hint="Nombre del perfil asociado al WMS"
-                android:inputType="text"
-                android:padding="10dp"
-                android:textColor="@color/txt"
-                android:textSize="13sp" />
-
-        </LinearLayout>
-
+            android:background="@drawable/bg_field_light"
+            android:hint="Nombre del perfil asociado al WMS"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
         <CheckBox
             android:id="@+id/cutKeystroke"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="En modo SUMA, cortar la salida de teclado del lector (así el código no se escribe en el textbox del WMS)"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:minHeight="48dp"
+            android:text="En modo SUMA, cortar la salida de teclado del lector"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="CALIBRACIÓN Y APARIENCIA"
-            android:textColor="@color/dim"
+            android:layout_marginBottom="6dp"
+            android:letterSpacing="0.08"
+            android:text="PESO OBJETIVO"
+            android:textColor="@color/corp_muted"
             android:textSize="12sp"
             android:textStyle="bold" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/offset"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_field"
-                android:hint="Recorte desde"
-                android:inputType="number"
-                android:padding="10dp"
-                android:textColor="@color/txt"
-                android:textSize="13sp" />
-
-            <EditText
-                android:id="@+id/len"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_field"
-                android:hint="Largo"
-                android:inputType="number"
-                android:padding="10dp"
-                android:textColor="@color/txt"
-                android:textSize="13sp" />
-
-            <EditText
-                android:id="@+id/alpha"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_field"
-                android:hint="Opacidad %"
-                android:inputType="number"
-                android:padding="10dp"
-                android:textColor="@color/txt"
-                android:textSize="13sp" />
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+                <EditText
+                    android:id="@+id/tolerance"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_field_light"
+                    android:hint="Tolerancia hacia abajo (kg)"
+                    android:inputType="numberDecimal"
+                    android:minHeight="48dp"
+                    android:padding="12dp"
+                    android:textColor="@color/corp_body"
+                    android:textSize="14sp" />
+                <EditText
+                    android:id="@+id/near"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_field_light"
+                    android:hint="Aviso de cercanía (kg)"
+                    android:inputType="numberDecimal"
+                    android:minHeight="48dp"
+                    android:padding="12dp"
+                    android:textColor="@color/corp_body"
+                    android:textSize="14sp" />
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/tolerance"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/bg_field"
-                android:hint="Tolerancia hacia abajo (kg)"
-                android:inputType="numberDecimal"
-                android:padding="10dp"
-                android:textColor="@color/txt"
-                android:textSize="13sp" />
-
-            <EditText
-                android:id="@+id/near"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_field"
-                android:hint="Aviso de cercanía (kg)"
-                android:inputType="numberDecimal"
-                android:padding="10dp"
-                android:textColor="@color/txt"
-                android:textSize="13sp" />
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/comma"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Separador decimal coma (11,5)"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
-        <CheckBox
-            android:id="@+id/twoInserts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Insertar el peso en dos momentos (el WMS lo pide dos veces)"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
-        <CheckBox
-            android:id="@+id/resetAfter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reiniciar la suma después de insertar"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
-        <CheckBox
-            android:id="@+id/sound"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Aviso hablado en duplicados y errores"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
-        <CheckBox
-            android:id="@+id/edgeBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Modo barra de borde (más discreto)"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
         <EditText
             android:id="@+id/targetAnchor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="@drawable/bg_field"
+            android:background="@drawable/bg_field_light"
             android:hint="Texto antes del peso pedido en el WMS"
             android:inputType="text"
-            android:padding="10dp"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
         <CheckBox
             android:id="@+id/screenTarget"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Leer el objetivo desde la pantalla del WMS (amplía el alcance del servicio de accesibilidad: consúltalo con TI)"
-            android:textColor="@color/amber"
-            android:textSize="13sp" />
-
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_button"
-            android:text="Guardar y reiniciar burbuja"
-            android:textColor="@color/ice"
+            android:minHeight="48dp"
+            android:text="Leer el objetivo desde la pantalla del WMS (amplía la accesibilidad: consúltalo con TI)"
+            android:textColor="@color/corp_body"
             android:textSize="14sp" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="PRUEBA"
-            android:textColor="@color/dim"
+            android:layout_marginBottom="6dp"
+            android:letterSpacing="0.08"
+            android:text="PREFERENCIAS"
+            android:textColor="@color/corp_muted"
             android:textSize="12sp"
             android:textStyle="bold" />
-
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
+                <EditText
+                    android:id="@+id/offset"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_field_light"
+                    android:hint="Recorte desde"
+                    android:inputType="number"
+                    android:minHeight="48dp"
+                    android:padding="12dp"
+                    android:textColor="@color/corp_body"
+                    android:textSize="14sp" />
+                <EditText
+                    android:id="@+id/len"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_field_light"
+                    android:hint="Largo"
+                    android:inputType="number"
+                    android:minHeight="48dp"
+                    android:padding="12dp"
+                    android:textColor="@color/corp_body"
+                    android:textSize="14sp" />
+                <EditText
+                    android:id="@+id/alpha"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_field_light"
+                    android:hint="Opacidad %"
+                    android:inputType="number"
+                    android:minHeight="48dp"
+                    android:padding="12dp"
+                    android:textColor="@color/corp_body"
+                    android:textSize="14sp" />
+        </LinearLayout>
+        <CheckBox
+            android:id="@+id/comma"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Separador decimal coma (11,5)"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
+        <CheckBox
+            android:id="@+id/resetAfter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Reiniciar la suma después de insertar"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
+        <CheckBox
+            android:id="@+id/sound"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Aviso hablado en duplicados, errores y objetivo"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
+        <CheckBox
+            android:id="@+id/edgeBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Modo barra de borde (más discreto)"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_primary"
+            android:text="Guardar y reiniciar burbuja"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="6dp"
+            android:letterSpacing="0.08"
+            android:text="PRUEBA"
+            android:textColor="@color/corp_muted"
+            android:textSize="12sp"
+            android:textStyle="bold" />
         <EditText
             android:id="@+id/test"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="@drawable/bg_field"
+            android:background="@drawable/bg_field_light"
             android:fontFamily="monospace"
             android:hint="Dispara la pistola aquí o pega un código"
             android:inputType="text"
-            android:padding="10dp"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:textColor="@color/corp_body"
+            android:textSize="14sp" />
         <Button
             android:id="@+id/btnTest"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_button"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_light"
             android:text="Probar el código"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:textAllCaps="false"
+            android:textColor="@color/corp_navy"
+            android:textSize="14sp" />
         <Button
             android:id="@+id/btnTestVoice"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_button"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_light"
             android:text="Probar la voz"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
-
+            android:textAllCaps="false"
+            android:textColor="@color/corp_navy"
+            android:textSize="14sp" />
         <Button
             android:id="@+id/btnReadScreen"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_button"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_button_light"
             android:text="Ver la última lectura de pantalla"
-            android:textColor="@color/txt"
-            android:textSize="13sp" />
+            android:textAllCaps="false"
+            android:textColor="@color/corp_navy"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/screenTexts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/bg_field"
+            android:background="@drawable/bg_card_light"
             android:fontFamily="monospace"
-            android:padding="10dp"
-            android:textColor="@color/dim"
+            android:padding="12dp"
+            android:textColor="@color/corp_body"
             android:textSize="11sp"
             android:visibility="gone" />
 
@@ -412,7 +654,8 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="24dp"
             android:fontFamily="monospace"
-            android:textColor="@color/ice"
+            android:textColor="@color/corp_blue"
             android:textSize="16sp" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

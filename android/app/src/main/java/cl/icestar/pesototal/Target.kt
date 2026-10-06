@@ -23,6 +23,10 @@ object Target {
      */
     fun state(total: Double, target: Double, toleranceKg: Double, nearKg: Double): State {
         if (target <= 0.0) return State.SIN_OBJETIVO
+        // Sin nada escaneado nunca se esta en peso. Con un objetivo menor o
+        // igual a la tolerancia (2 kg contra 2 kg) la banda empieza en cero, y
+        // cero cumplia: la burbuja daba "completo" antes del primer escaneo.
+        if (total <= 0.0) return State.FALTA
         val bandStart = target - maxOf(0.0, toleranceKg)
         return when {
             total > target -> State.EXCEDIDO

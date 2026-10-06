@@ -53,6 +53,7 @@ class TallyService : Service() {
         }
         InsertAccessibilityService.onTargetDetected = { kg -> overlay?.onTargetDetected(kg) }
         cameraHandler = { raw -> onScan(raw, fromCamera = true) }
+        settingsChanged = { overlay?.refresh() }
 
         receiver = ScanReceiver(
             onScan = { raw -> onScan(raw) },
@@ -77,6 +78,7 @@ class TallyService : Service() {
         isRunning = false
         InsertAccessibilityService.onTargetDetected = null
         cameraHandler = null
+        settingsChanged = null
         Voice.stop()
         restoreKeystroke()
         changeListener?.let { tally.removeChange(it) }
@@ -180,6 +182,17 @@ class TallyService : Service() {
 
         @Volatile
         private var cameraHandler: ((String) -> Unit)? = null
+
+        @Volatile
+        private var settingsChanged: (() -> Unit)? = null
+
+        /**
+         * Los interruptores del menu del operario aplican al instante: reiniciar
+         * la burbuja por cada uno le borraria el modo SUMA a mitad de tarea.
+         */
+        fun notifySettingsChanged() {
+            settingsChanged?.invoke()
+        }
 
         /** false = la burbuja no esta corriendo y nadie recibe el codigo. */
         fun handleCameraScan(raw: String): Boolean {

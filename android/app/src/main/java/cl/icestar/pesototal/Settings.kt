@@ -102,6 +102,11 @@ class Settings(ctx: Context) {
         get() = str("targetAnchor", TargetScraper.DEFAULT_ANCHOR)
         set(v) = put("targetAnchor", v)
 
+    /** Boton de camara en la burbuja. En una RF con lector sobra. */
+    var cameraEnabled: Boolean
+        get() = p.getBoolean("cameraEnabled", true)
+        set(v) = put("cameraEnabled", v)
+
     /** Aviso hablado en duplicados y errores de lectura. */
     var sound: Boolean
         get() = p.getBoolean("sound", true)

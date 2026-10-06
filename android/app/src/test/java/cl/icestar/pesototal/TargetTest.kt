@@ -54,6 +54,14 @@ class TargetTest {
     }
 
     @Test
+    fun `sin escanear nada nunca esta en peso`() {
+        // Objetivo de 2 kg con tolerancia de 2 kg: la banda empieza en cero.
+        assertEquals(State.FALTA, Target.state(0.0, 2.0, 2.0, 2.0))
+        assertEquals(State.EN_PESO, Target.state(0.5, 2.0, 2.0, 2.0))
+        assertEquals(State.FALTA, Target.state(0.0, 40.0, 2.0, 2.0))
+    }
+
+    @Test
     fun `lo que falta se redondea a tres decimales`() {
         assertEquals(5.3, Target.remaining(34.7, 40.0), 0.0)
         assertEquals(-1.2, Target.remaining(41.2, 40.0), 0.0)

@@ -65,6 +65,14 @@ En la burbuja, con el WMS al frente, mantén pulsada la línea Objetivo del pane
     <string name="notif_total">%1$s kg · %2$d etiquetas</string>
 
     <string name="guardado">Guardado</string>
+    <string name="clave_titulo">Configuración avanzada</string>
+    <string name="clave_hint">Contraseña</string>
+    <string name="clave_incorrecta">Contraseña incorrecta</string>
+    <string name="entrar">Entrar</string>
+    <string name="avanzado_bloqueado">Bloqueada</string>
+    <string name="avanzado_ocultar">Ocultar</string>
+    <string name="falta_permiso_overlay">Sin el permiso de mostrar sobre otras apps no hay burbuja.</string>
+    <string name="falta_permiso_acc">Sin accesibilidad el total se copia y hay que pegarlo a mano.</string>
     <string name="falta_overlay">Falta el permiso para mostrar sobre otras apps</string>
     <string name="si">sí</string>
     <string name="no">NO</string>

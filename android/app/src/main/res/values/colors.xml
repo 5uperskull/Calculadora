@@ -17,5 +17,18 @@
     <color name="coral">#FF6B5E</color>
     <color name="green">#3FBF6B</color>
     <color name="white">#FFFFFF</color>
+
+    <!-- Plataforma LATAM en fondo claro: el menu sigue la guia corporativa de
+         pantallas de contenido (blanco, titulo navy, linea azul y amarilla). La
+         burbuja se queda oscura porque vive encima del WMS. -->
+    <color name="corp_navy">#071A3A</color>
+    <color name="corp_blue">#1E6FD9</color>
+    <color name="corp_yellow">#FFC400</color>
+    <color name="corp_body">#2E3A4F</color>
+    <color name="corp_muted">#5B6B85</color>
+    <color name="corp_border">#E1E8F2</color>
+    <color name="corp_offwhite">#F5F8FF</color>
+    <color name="corp_red">#B91C1C</color>
+    <color name="corp_red_light">#FEF2F2</color>
     <color name="red">#D32F2F</color>
 </resources>

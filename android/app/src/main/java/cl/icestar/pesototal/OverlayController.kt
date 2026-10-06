@@ -123,6 +123,11 @@ class OverlayController(
         shown = false
     }
 
+    /** Un ajuste cambio desde el menu: la burbuja lo refleja sin reiniciarse. */
+    fun refresh() {
+        handler.post { render() }
+    }
+
     /** Un escaneo aceptado: dice cuanto entro y vibra corto. */
     fun onScanAdded(kg: Double) {
         status("+ " + WeightParser.format(kg, settings.comma) + " kg")
@@ -318,6 +323,8 @@ class OverlayController(
         } else {
             action
         }
+
+        btnCamera.visibility = if (settings.cameraEnabled) View.VISIBLE else View.GONE
 
         // El modo barra de borde solo estrecha la pastilla: el conteo se va.
         countView.visibility = if (settings.edgeBar && !expanded) View.GONE else View.VISIBLE

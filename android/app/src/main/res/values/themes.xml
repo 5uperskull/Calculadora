@@ -5,4 +5,16 @@
         <item name="android:textColor">@color/txt</item>
         <item name="android:textColorHint">@color/dim</item>
     </style>
+
+    <!-- Solo para el menu. La burbuja hereda el tema oscuro de la app. -->
+    <style name="Theme.PesoTotal.Ajustes" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/corp_navy</item>
+        <item name="colorPrimaryDark">@color/corp_navy</item>
+        <item name="colorAccent">@color/corp_blue</item>
+        <item name="colorControlActivated">@color/corp_blue</item>
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:textColor">@color/corp_body</item>
+        <item name="android:textColorHint">@color/corp_muted</item>
+        <item name="android:statusBarColor">@color/corp_navy</item>
+    </style>
 </resources>

@@ -47,6 +47,30 @@ Los tests corren antes de ensamblar: si el parser se rompe, no sale APK.
    portapapeles automáticamente y el botón pasa a decir *Copiar*.
 5. **Mostrar burbuja**.
 
+## El menú de la app
+
+Dos niveles, pensados para que el operario no tenga que pensar.
+
+**A la vista, para el operario** — tres interruptores que aplican al instante,
+sin guardar ni reiniciar nada:
+
+| Interruptor | Qué hace |
+|---|---|
+| **Burbuja** | Enciende o apaga la burbuja flotante |
+| **Pegar dos veces** | El total se inserta en dos momentos (*Insertar 1/2*, *2/2*) |
+| **Botón de cámara** | Muestra u oculta el botón *Cámara* en la burbuja |
+
+Si falta un permiso aparece arriba una tarjeta roja con el botón para
+concederlo; si no falta nada, no aparece.
+
+**Configuración avanzada** — plegada y con contraseña. Contiene el lector, el
+perfil de DataWedge, el objetivo, las preferencias y las pruebas. Se vuelve a
+bloquear sola al salir de la app, para que el próximo que la abra sea operario.
+
+> La contraseña dentro del APK **no es seguridad**: se puede sacar descompilando
+> la app. Evita que alguien toque la configuración por accidente. Para impedirlo
+> de verdad está el MDM. Se guarda sólo su hash, no el texto.
+
 ## 3. Configurar el lector (DataWedge)
 
 Esta es la parte que hay que hacer bien. Sin ella la app no recibe nada y
