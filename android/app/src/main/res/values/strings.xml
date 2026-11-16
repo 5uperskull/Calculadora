@@ -15,7 +15,7 @@
     <string name="cancelar">Cancelar</string>
     <string name="manual_hint">Teclea el peso en kg</string>
     <string name="objetivo_hint">Teclea el objetivo en kg (0 lo borra)</string>
-    <string name="objetivo_vacio">Objetivo: toca para fijarlo, mantén para leerlo del WMS</string>
+    <string name="objetivo_vacio">Sin objetivo · tocar para fijar</string>
     <string name="objetivo_fijado">Objetivo %1$s kg</string>
     <string name="objetivo_falta">Objetivo %1$s kg · faltan %2$s</string>
     <string name="objetivo_en_peso">Objetivo %1$s kg · en peso</string>
@@ -55,6 +55,9 @@ En la burbuja, con el WMS al frente, mantén pulsada la línea Objetivo del pane
     <string name="sin_peso">Sin peso en el código: %1$s</string>
     <string name="sin_lineas">Todavía no hay etiquetas</string>
     <string name="sin_cadena">Sin cadena</string>
+    <string name="cadena_articulo">Artículo  %1$s</string>
+    <string name="cadena_lote">Lote  %1$s</string>
+    <string name="cadena_vence">Vence  %1$s</string>
     <string name="articulo_pedido">Artículo pedido: %1$s</string>
     <string name="otro_articulo">Otro artículo (%1$s): no suma a %2$s</string>
     <string name="nada_que_deshacer">Nada que deshacer</string>

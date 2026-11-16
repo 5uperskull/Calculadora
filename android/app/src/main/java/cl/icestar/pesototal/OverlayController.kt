@@ -455,13 +455,29 @@ class OverlayController(
         val headers = groups.size > 1 || groups.first().key.isNotEmpty()
         groups.forEach { group ->
             val chosen = Label.matches(group.key, selection)
-            if (headers) linesBox.addView(groupView(group, chosen))
-            if (!chosen) return@forEach
+            if (headers && !chosen) {
+                linesBox.addView(groupView(group, false))
+                return@forEach
+            }
+            // La cadena elegida va en un bloque con borde amarillo: cabecera
+            // grande con articulo, lote y vencimiento, y sus etiquetas debajo.
+            val block = if (headers) {
+                LinearLayout(ctx).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setBackgroundResource(R.drawable.bg_group_on)
+                    val pad = (8 * ctx.resources.displayMetrics.density).toInt()
+                    setPadding(pad, pad / 2, pad, pad / 2)
+                    addView(groupView(group, true))
+                    linesBox.addView(this)
+                }
+            } else {
+                linesBox
+            }
             // La ultima leida arriba, que es donde se mira. El numero sigue
             // siendo el orden de escaneo, asi no se pierde la secuencia.
             rows.withIndex().reversed().filter { it.value.chain == group.key }
                 .forEach { (index, line) ->
-                    linesBox.addView(
+                    block.addView(
                         rowView(
                             (index + 1).toString(),
                             WeightParser.format(line.kg, settings.comma) + " kg",
@@ -480,6 +496,11 @@ class OverlayController(
         linesScroll.post { linesScroll.scrollTo(0, 0) }
     }
 
+    /**
+     * Cabecera de una cadena. La elegida muestra todo en grande, en tres
+     * renglones: con 290 dp de ancho una sola linea cortaba el lote.
+     * Las demas van en una linea tenue: basta para reconocerlas y tocarlas.
+     */
     private fun groupView(group: Tally.Group, chosen: Boolean): View {
         val row = LayoutInflater.from(ctx).inflate(R.layout.overlay_line, linesBox, false)
         row.findViewById<TextView>(R.id.lineNum).apply {
@@ -487,18 +508,37 @@ class OverlayController(
             setTextColor(ctx.getColor(if (chosen) R.color.amber else R.color.dim))
         }
         row.findViewById<TextView>(R.id.lineKg).apply {
-            text = WeightParser.format(group.kg, settings.comma) + " kg"
-            setTextColor(ctx.getColor(if (chosen) R.color.txt else R.color.dim))
+            text = WeightParser.format(group.kg, settings.comma) + " kg" +
+                (if (chosen) "\n" + group.count + " etiq." else "")
+            setTextColor(ctx.getColor(if (chosen) R.color.amber else R.color.dim))
         }
         row.findViewById<TextView>(R.id.lineCode).apply {
-            text = Label.display(group.key, ctx.getString(R.string.sin_cadena)) +
-                " (" + group.count + ")"
-            textSize = 11f
-            setTextColor(ctx.getColor(if (chosen) R.color.ice else R.color.dim))
+            if (chosen) {
+                setSingleLine(false)
+                maxLines = 3
+                textSize = 13f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setTextColor(ctx.getColor(R.color.txt))
+                text = chainDetails(group.key)
+            } else {
+                textSize = 11f
+                setTextColor(ctx.getColor(R.color.dim))
+                text = Label.display(group.key, ctx.getString(R.string.sin_cadena))
+            }
         }
         row.findViewById<View>(R.id.lineDelete).visibility = View.GONE
         row.setOnClickListener { select(group.key) }
         return row
+    }
+
+    private fun chainDetails(key: String): String {
+        if (key.isEmpty()) return ctx.getString(R.string.sin_cadena)
+        val part = key.split(Label.SEP).map { it.takeIf(String::isNotEmpty) }
+        return listOfNotNull(
+            part.getOrNull(0)?.let { ctx.getString(R.string.cadena_articulo, it) },
+            part.getOrNull(1)?.let { ctx.getString(R.string.cadena_lote, it) },
+            part.getOrNull(2)?.let { ctx.getString(R.string.cadena_vence, Label.formatExpiry(it)) }
+        ).joinToString("\n")
     }
 
     private fun rowView(
@@ -538,7 +578,33 @@ class OverlayController(
         panel.visibility = View.VISIBLE
         hideKeypad()
         render()
+        fitOnScreen()
         wake()
+    }
+
+    /** Posicion antes de subir la burbuja para que entre; se vuelve al cerrar. */
+    private var savedY: Int? = null
+
+    /**
+     * Con la burbuja abajo, el panel o el teclado salian por el borde y los
+     * botones Agregar y Cancelar quedaban cortados. Se sube lo justo.
+     */
+    private fun fitOnScreen() {
+        root.post {
+            if (!shown) return@post
+            val overflow = params.y + root.height - ctx.resources.displayMetrics.heightPixels
+            if (overflow <= 0) return@post
+            if (savedY == null) savedY = params.y
+            params.y = maxOf(0, params.y - overflow)
+            wm.updateViewLayout(root, params)
+        }
+    }
+
+    private fun restorePosition() {
+        val y = savedY ?: return
+        savedY = null
+        params.y = y
+        if (shown) wm.updateViewLayout(root, params)
     }
 
     // ---------------------------------------------------------- peso a mano
@@ -578,14 +644,17 @@ class OverlayController(
         manualBuffer = ""
         renderManual()
         keypad.visibility = View.VISIBLE
+        summaryView.visibility = View.GONE
         linesScroll.visibility = View.GONE
         primaryRow.visibility = View.GONE
         actionsRow.visibility = View.GONE
+        fitOnScreen()
         wake()
     }
 
     private fun hideKeypad() {
         keypad.visibility = View.GONE
+        summaryView.visibility = View.VISIBLE
         linesScroll.visibility = View.VISIBLE
         primaryRow.visibility = View.VISIBLE
         actionsRow.visibility = View.VISIBLE
@@ -673,6 +742,7 @@ class OverlayController(
     private fun collapse() {
         expanded = false
         panel.visibility = View.GONE
+        restorePosition()
         render()
         wake()
     }
@@ -802,6 +872,8 @@ class OverlayController(
         val center = params.x + root.width / 2
         params.x = if (center > screen / 2) screen - root.width else 0
         params.y = params.y.coerceAtLeast(0)
+        // La movio el operario: esa es la posicion buena, no la de antes.
+        savedY = null
         wm.updateViewLayout(root, params)
         settings.bubbleX = params.x
         settings.bubbleY = params.y

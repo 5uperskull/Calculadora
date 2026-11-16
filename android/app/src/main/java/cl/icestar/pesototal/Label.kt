@@ -56,6 +56,14 @@ object Label {
     fun matches(key: String, selection: String): Boolean =
         selection == ALL || key == selection || key.startsWith(selection + SEP)
 
+    /** AAMMDD de la etiqueta a DD/MM/AAAA, que es como lo lee el operario. */
+    fun formatExpiry(raw: String): String =
+        if (raw.length == 6 && raw.all { it.isDigit() }) {
+            raw.substring(4, 6) + "/" + raw.substring(2, 4) + "/20" + raw.substring(0, 2)
+        } else {
+            raw
+        }
+
     /** "1000979 · 264430961R · 261127" para la burbuja. */
     fun display(key: String, none: String): String =
         if (key.isEmpty()) none else key.split(SEP).filter { it.isNotEmpty() }.joinToString(" · ")

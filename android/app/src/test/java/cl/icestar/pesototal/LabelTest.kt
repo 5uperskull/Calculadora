@@ -51,4 +51,10 @@ class LabelTest {
         assertFalse(Label.matches("1000282|264635661R|261117", "1000979"))
         assertTrue(Label.matches("", Label.ALL))
     }
+
+    @Test
+    fun `vencimiento se muestra como lo lee el operario`() {
+        assertEquals("27/11/2026", Label.formatExpiry("261127"))
+        assertEquals("", Label.formatExpiry(""))
+    }
 }
