@@ -242,6 +242,21 @@ leído la pistola — mismas reglas de duplicado, objetivo y alertas.
 - La burbuja tiene que estar activa: si no, el código se lee pero avisa que no
   se sumó.
 
+### Sumas por cadena (artículo · lote · vencimiento)
+
+De cada etiqueta propia se sacan, con las mismas reglas que la PLANTILLA de Excel:
+
+| Campo | Regla | `921000979310301173010264430961R17261127` |
+|---|---|---|
+| Artículo | posiciones 3–9, sin ceros a la izquierda | `1000979` |
+| Peso | AI 310n fijo en la posición 10 | `11,73` |
+| Lote | 9 caracteres antes de la primera R/C/H/X + la letra | `264430961R` |
+| Vencimiento | 6 dígitos después de R17/C17/H17/X17 (AAMMDD) | `261127` |
+
+Dos cadenas distintas **nunca se suman juntas**. Al abrir la burbuja se ve una fila por cadena con su subtotal; la marcada con ● es la que se muestra en la pastilla, se compara con el objetivo y se inserta. Un toque en otra fila la elige. La última leída queda elegida sola. El peso a mano entra en la cadena elegida. Al insertar, solo se cierra esa cadena: las demás del pallet siguen ahí.
+
+**Con el artículo en pantalla:** si la lectura de pantalla encuentra `Artículo: XXXX - descripción`, la suma pasa a ser la de ese artículo, con todos sus lotes. Una etiqueta de otro artículo queda en su propia fila, no suma y avisa en amarillo con vibración doble.
+
 ### Insertar en dos momentos
 
 El WMS pide el peso, lo procesa, y lo vuelve a pedir. Por eso la suma **no se

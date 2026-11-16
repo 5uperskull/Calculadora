@@ -68,4 +68,11 @@ class TargetScraperTest {
         val texts = listOf("Peso a tomar 7,25 kg")
         assertEquals(7.25, TargetScraper.findTarget(texts, anchor = "Peso a tomar")!!, 0.0)
     }
+
+    @Test
+    fun `articulo de la pantalla de easyWMS`() {
+        assertEquals("AYUDA_10", TargetScraper.findArticle(listOf("Artículo: AYUDA_10 - PRUEBA DESDE EXCEL_11")))
+        assertEquals("1000979", TargetScraper.findArticle(listOf("Articulo:", "01000979 - ASADO")))
+        assertNull(TargetScraper.findArticle(listOf("Cantidad pendiente: 40 [KG]")))
+    }
 }

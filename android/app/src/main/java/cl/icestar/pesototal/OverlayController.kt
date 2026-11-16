@@ -199,6 +199,11 @@ class OverlayController(
             ?.takeIf { it.isNotEmpty() && it != ctx.packageName }
             ?.let { settings.wmsPackage = it }
 
+        TargetScraper.findArticle(texts)?.let {
+            settings.screenArticle = it
+            settings.selection = it
+        }
+
         val found = TargetScraper.findTarget(texts, settings.targetAnchor)
         if (found == null || found <= 0.0 || found > WeightParser.MAX_KG) {
             status(ctx.getString(R.string.pantalla_no_detectado))
@@ -226,6 +231,42 @@ class OverlayController(
         wake()
     }
 
+    /** El WMS pide un articulo: la suma pasa a ser la de ese articulo. */
+    fun onArticleDetected(article: String) {
+        select(article)
+        status(ctx.getString(R.string.articulo_pedido, article))
+    }
+
+    /**
+     * Con articulo pedido en pantalla llego otro: queda en su propia cadena y
+     * no toca la suma que se compara. Se avisa como un repetido.
+     */
+    fun onOtherArticle(chain: String, wanted: String) {
+        duplicateUntil = SystemClock.uptimeMillis() + DUPLICATE_FLASH_MS
+        val got = chain.substringBefore(Label.SEP).ifEmpty { ctx.getString(R.string.sin_cadena) }
+        status(ctx.getString(R.string.otro_articulo, got, wanted))
+        buzz(BUZZ_DUP)
+        render()
+        handler.removeCallbacks(endDuplicateFlash)
+        handler.postDelayed(endDuplicateFlash, DUPLICATE_FLASH_MS)
+        wake()
+    }
+
+    /**
+     * Elegir que suma se muestra, se compara y se inserta. Otra suma es otro
+     * valor: la insercion en dos pasos vuelve a empezar.
+     */
+    private fun select(selection: String) {
+        settings.selection = selection
+        settings.insertsDone = 0
+        // Cambiar de cadena no es alcanzar el peso: no se anuncia nada.
+        lastState = null
+        render()
+        wake()
+    }
+
+    private val selectedTotal: Double get() = tally.total(settings.selection)
+
     /** DataWedge rechazo el corte: el codigo seguira llegando al WMS. */
     fun onDataWedgeFailed(detail: String) {
         status(ctx.getString(R.string.dw_fallo, detail.ifBlank { "sin detalle" }))
@@ -252,6 +293,7 @@ class OverlayController(
         }
         root.findViewById<Button>(R.id.btnReset).setOnClickListener {
             tally.reset()
+            settings.selection = settings.screenArticle.ifEmpty { Label.ALL }
             wake()
         }
         btnClose.setOnClickListener { if (exitArmed) onExit?.invoke() else armExit() }
@@ -272,17 +314,19 @@ class OverlayController(
     }
 
     private fun render() {
-        val totalText = WeightParser.format(tally.total, settings.comma)
+        val selected = selectedTotal
+        val totalText = WeightParser.format(selected, settings.comma)
         val target = settings.targetKg
-        val state = Target.state(tally.total, target, settings.toleranceKg, settings.nearKg)
+        val state = Target.state(selected, target, settings.toleranceKg, settings.nearKg)
 
         totalView.text = if (target > 0.0) {
             totalText + " / " + WeightParser.format(target, settings.comma) + " kg"
         } else {
             "$totalText kg"
         }
-        countView.text = tally.count.toString()
-        summaryView.text = ctx.getString(R.string.resumen, tally.count, totalText)
+        val count = tally.count(settings.selection)
+        countView.text = count.toString()
+        summaryView.text = ctx.getString(R.string.resumen, count, totalText)
         renderTargetLine(target, state)
 
         val duplicate = SystemClock.uptimeMillis() < duplicateUntil
@@ -340,7 +384,7 @@ class OverlayController(
             return
         }
         val targetText = WeightParser.format(target, settings.comma)
-        val diff = Target.remaining(tally.total, target)
+        val diff = Target.remaining(selectedTotal, target)
         val text: String
         val color: Int
         when (state) {
@@ -390,6 +434,11 @@ class OverlayController(
         }
     }
 
+    /**
+     * Una fila por cadena (articulo · lote · vencimiento) con su subtotal; un
+     * toque la elige. Solo la elegida despliega sus etiquetas, asi la burbuja
+     * no crece con cada pallet mixto.
+     */
     private fun renderLines() {
         if (!expanded) return
         linesBox.removeAllViews()
@@ -400,25 +449,56 @@ class OverlayController(
             )
             return
         }
-        // La ultima leida arriba, que es donde se mira. El numero sigue siendo
-        // el orden de escaneo, asi la lista invertida no pierde la secuencia.
-        rows.withIndex().reversed().forEach { (index, line) ->
-            linesBox.addView(
-                rowView(
-                    (index + 1).toString(),
-                    WeightParser.format(line.kg, settings.comma) + " kg",
-                    if (line.manual) ctx.getString(R.string.manual) else line.code,
-                    line.duplicate,
-                    line.manual
-                ) {
-                    tally.removeAt(index)
-                    wake()
+        val selection = settings.selection
+        val groups = tally.groups()
+        // Etiquetas viejas sin cadena: la lista de siempre, sin cabecera.
+        val headers = groups.size > 1 || groups.first().key.isNotEmpty()
+        groups.forEach { group ->
+            val chosen = Label.matches(group.key, selection)
+            if (headers) linesBox.addView(groupView(group, chosen))
+            if (!chosen) return@forEach
+            // La ultima leida arriba, que es donde se mira. El numero sigue
+            // siendo el orden de escaneo, asi no se pierde la secuencia.
+            rows.withIndex().reversed().filter { it.value.chain == group.key }
+                .forEach { (index, line) ->
+                    linesBox.addView(
+                        rowView(
+                            (index + 1).toString(),
+                            WeightParser.format(line.kg, settings.comma) + " kg",
+                            if (line.manual) ctx.getString(R.string.manual) else line.code,
+                            line.duplicate,
+                            line.manual
+                        ) {
+                            tally.removeAt(index)
+                            wake()
+                        }
+                    )
                 }
-            )
         }
         // Si el operario habia bajado a revisar, lo recien escaneado vuelve a
         // quedar a la vista.
         linesScroll.post { linesScroll.scrollTo(0, 0) }
+    }
+
+    private fun groupView(group: Tally.Group, chosen: Boolean): View {
+        val row = LayoutInflater.from(ctx).inflate(R.layout.overlay_line, linesBox, false)
+        row.findViewById<TextView>(R.id.lineNum).apply {
+            text = if (chosen) "\u25CF" else "\u25CB"
+            setTextColor(ctx.getColor(if (chosen) R.color.amber else R.color.dim))
+        }
+        row.findViewById<TextView>(R.id.lineKg).apply {
+            text = WeightParser.format(group.kg, settings.comma) + " kg"
+            setTextColor(ctx.getColor(if (chosen) R.color.txt else R.color.dim))
+        }
+        row.findViewById<TextView>(R.id.lineCode).apply {
+            text = Label.display(group.key, ctx.getString(R.string.sin_cadena)) +
+                " (" + group.count + ")"
+            textSize = 11f
+            setTextColor(ctx.getColor(if (chosen) R.color.ice else R.color.dim))
+        }
+        row.findViewById<View>(R.id.lineDelete).visibility = View.GONE
+        row.setOnClickListener { select(group.key) }
+        return row
     }
 
     private fun rowView(
@@ -578,7 +658,9 @@ class OverlayController(
                 }
             )
         } else {
-            tally.addManual(kg)
+            // El peso a mano entra en la cadena elegida: articulo y lote son
+            // los de la etiqueta rota que el operario tiene al lado.
+            tally.addManual(kg, settings.selection.takeIf { it != Label.ALL }.orEmpty())
             status(
                 ctx.getString(R.string.manual_agregado, WeightParser.format(kg, settings.comma))
             )
@@ -601,7 +683,7 @@ class OverlayController(
      * SUMA: nadie pierde la cuenta por un campo sin foco.
      */
     private fun toggleMode() {
-        if (settings.sumMode && !tally.isEmpty) {
+        if (settings.sumMode && selectedTotal > 0.0) {
             insert()
             return
         }
@@ -627,11 +709,12 @@ class OverlayController(
     }
 
     private fun insert() {
-        if (tally.isEmpty) {
+        val selected = selectedTotal
+        if (selected <= 0.0) {
             status(ctx.getString(R.string.nada_que_insertar))
             return
         }
-        val text = WeightParser.format(tally.total, settings.comma)
+        val text = WeightParser.format(selected, settings.comma)
 
         if (InsertAccessibilityService.setFocusedText(text)) {
             status(ctx.getString(R.string.insertado, text))
@@ -663,11 +746,15 @@ class OverlayController(
         }
         settings.insertsDone = 0
         if (settings.resetAfterInsert) {
-            tally.reset()
+            // Solo se cierra lo insertado: las otras cadenas del pallet siguen.
+            tally.clear(settings.selection)
             // La tarea siguiente trae otro pedido: arrastrar el objetivo viejo
             // haria sonar "excedido" en cuanto empiece a sumar.
             settings.targetKg = 0.0
+            settings.screenArticle = ""
+            settings.selection = tally.lastChain ?: Label.ALL
             lastState = null
+            render()
         }
         if (settings.sumMode) setMode(false)
         wake()

@@ -76,4 +76,9 @@ class WeightParserTest {
         assertEquals("921,016", WeightParser.format(921.016))
         assertEquals("34,7", WeightParser.format(11.5 + 11.5 + 11.7))
     }
+
+    @Test
+    fun `articulo 1045310 no confunde su 310 con el peso`() {
+        assertEquals(11.73, WeightParser.parse("921045310310301173010264430961R17261127")!!.kg, 0.0)
+    }
 }

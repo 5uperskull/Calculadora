@@ -16,8 +16,13 @@ class Tally(private val store: Store) {
         val code: String,
         val duplicate: Boolean,
         /** Tecleado a mano porque la etiqueta no se podia leer. */
-        val manual: Boolean = false
+        val manual: Boolean = false,
+        /** Articulo|lote|vencimiento (ver [Label]). "" = etiqueta sin cadena. */
+        val chain: String = ""
     )
+
+    /** Subtotal de una cadena, para la lista de la burbuja. */
+    data class Group(val key: String, val kg: Double, val count: Int)
 
     private val lines = mutableListOf<Line>()
 
@@ -37,6 +42,21 @@ class Tally(private val store: Store) {
 
     fun snapshot(): List<Line> = lines.toList()
 
+    /** Suma de lo que abarca la seleccion: una cadena, un articulo o todo. */
+    fun total(selection: String): Double =
+        WeightParser.round3(lines.filter { Label.matches(it.chain, selection) }.sumOf { it.kg })
+
+    fun count(selection: String): Int = lines.count { Label.matches(it.chain, selection) }
+
+    /** Una fila por cadena, la de la ultima lectura primero. */
+    fun groups(): List<Group> = lines.reversed().map { it.chain }.distinct().map { key ->
+        val own = lines.filter { it.chain == key }
+        Group(key, WeightParser.round3(own.sumOf { it.kg }), own.size)
+    }
+
+    /** Cadena de la ultima linea, o null si no hay lineas. */
+    val lastChain: String? get() = lines.lastOrNull()?.chain
+
     /** Devuelve el mismo listener para poder darlo de baja despues. */
     fun onChange(listener: () -> Unit): () -> Unit {
         listeners += listener
@@ -53,9 +73,9 @@ class Tally(private val store: Store) {
      *
      * @return false si era repetido y no se sumo.
      */
-    fun add(kg: Double, code: String): Boolean {
+    fun add(kg: Double, code: String, chain: String = ""): Boolean {
         if (lines.any { !it.manual && it.code == code }) return false
-        lines += Line(WeightParser.round3(kg), code, duplicate = false)
+        lines += Line(WeightParser.round3(kg), code, duplicate = false, chain = chain)
         undoSnapshot = emptyList()
         commit()
         return true
@@ -67,25 +87,27 @@ class Tally(private val store: Store) {
      * Nunca se marca duplicado: dos pesos iguales escritos a mano son dos cajas
      * distintas, no una lectura repetida.
      */
-    fun addManual(kg: Double) {
-        lines += Line(WeightParser.round3(kg), MANUAL_CODE, duplicate = false, manual = true)
+    fun addManual(kg: Double, chain: String = "") {
+        lines += Line(
+            WeightParser.round3(kg), MANUAL_CODE, duplicate = false, manual = true, chain = chain
+        )
         undoSnapshot = emptyList()
         commit()
     }
 
     /**
-     * Una sola tecla Deshacer: si hay lineas quita la ultima, y si la suma
-     * quedo vacia por un reinicio, la restaura.
+     * Una sola tecla Deshacer: si lo ultimo fue vaciar (todo o una cadena),
+     * lo devuelve; si no, quita la ultima linea.
      */
     fun undo(): Boolean {
-        if (lines.isNotEmpty()) {
-            lines.removeAt(lines.size - 1)
-            commit()
-            return true
-        }
         if (undoSnapshot.isNotEmpty()) {
             lines.addAll(undoSnapshot)
             undoSnapshot = emptyList()
+            commit()
+            return true
+        }
+        if (lines.isNotEmpty()) {
+            lines.removeAt(lines.size - 1)
             commit()
             return true
         }
@@ -99,6 +121,20 @@ class Tally(private val store: Store) {
     fun removeAt(index: Int) {
         if (index !in lines.indices) return
         lines.removeAt(index)
+        undoSnapshot = emptyList()
+        commit()
+    }
+
+    /**
+     * Cierra solo lo insertado: en un pallet mixto las otras cadenas siguen
+     * pendientes y no se pueden perder.
+     */
+    fun clear(selection: String) {
+        if (selection == Label.ALL) return reset()
+        val gone = lines.filter { Label.matches(it.chain, selection) }
+        if (gone.isEmpty()) return
+        lines.removeAll(gone)
+        undoSnapshot = gone
         commit()
     }
 
@@ -117,7 +153,7 @@ class Tally(private val store: Store) {
     // Formato propio en vez de JSON: el separador es un control char, y
     // WeightParser.clean() los borra, asi que jamas puede aparecer en un codigo.
     private fun serialize(): String = lines.joinToString("\n") {
-        "${it.kg}\u0001${it.code}\u0001${it.duplicate}\u0001${it.manual}"
+        "${it.kg}\u0001${it.code}\u0001${it.duplicate}\u0001${it.manual}\u0001${it.chain}"
     }
 
     private fun load() {
@@ -129,7 +165,8 @@ class Tally(private val store: Store) {
             if (parts.size >= 3) {
                 val kg = parts[0].toDoubleOrNull() ?: return@forEach
                 val manual = parts.getOrNull(3)?.toBoolean() ?: false
-                lines += Line(kg, parts[1], parts[2].toBoolean(), manual)
+                val chain = parts.getOrNull(4).orEmpty()
+                lines += Line(kg, parts[1], parts[2].toBoolean(), manual, chain)
             }
         }
     }

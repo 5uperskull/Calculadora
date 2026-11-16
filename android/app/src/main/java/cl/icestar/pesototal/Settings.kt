@@ -50,6 +50,19 @@ class Settings(ctx: Context) {
         set(v) = put("targetKg", v.toString())
 
     /**
+     * Que suma se muestra, se compara con el objetivo y se inserta: una cadena
+     * articulo|lote|vencimiento, un articulo solo, o [Label.ALL].
+     */
+    var selection: String
+        get() = str("selection", Label.ALL)
+        set(v) = put("selection", v)
+
+    /** Articulo que pide la pantalla del WMS. "" = no se leyo ninguno. */
+    var screenArticle: String
+        get() = str("screenArticle", "")
+        set(v) = put("screenArticle", v)
+
+    /**
      * Cuanto puede quedar corto el pedido y contar como completo.
      *
      * Clave nueva a proposito: la vieja era un margen simetrico de 0,5 kg, y

@@ -139,10 +139,12 @@
   }
 
   // Via correcta: GS1 AI 310n = peso neto en kg, n decimales, 6 digitos.
-  // ponytail: el 310 podria aparecer por coincidencia dentro de otro campo
-  // numerico. Si eso pasa en terreno, anclar el AI a posicion fija.
+  // En la etiqueta propia (92 + articulo de 7) el AI va fijo en la posicion
+  // 10, igual que la plantilla Excel: el articulo 1045310 termina en 310 y
+  // buscarlo en cualquier parte leia 103,011 kg.
   function fromGs1(code) {
-    var m = /310([0-5])(\d{6})/.exec(code);
+    var at = /^92\d{7}310[0-5]\d{6}/.test(code) ? code.slice(9) : code;
+    var m = /310([0-5])(\d{6})/.exec(at);
     if (!m) return null;
     return {
       kg: parseInt(m[2], 10) / Math.pow(10, parseInt(m[1], 10)),

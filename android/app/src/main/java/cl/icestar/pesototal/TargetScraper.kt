@@ -33,6 +33,27 @@ object TargetScraper {
         return null
     }
 
+    // Con y sin tilde: segun la fuente del terminal la "í" puede llegar distinta.
+    private val ARTICLE_ANCHOR = Regex("""Art[ií]culo\s*:?""", RegexOption.IGNORE_CASE)
+    private val TOKEN = Regex("""[^\s:]+""")
+
+    /**
+     * Codigo del articulo que pide el WMS: "Artículo: AYUDA_10 - PRUEBA..." da
+     * "AYUDA_10". Solo el codigo, la descripcion que sigue al guion se ignora.
+     */
+    fun findArticle(texts: List<String>): String? {
+        texts.forEachIndexed { index, text ->
+            val anchor = ARTICLE_ANCHOR.find(text) ?: return@forEachIndexed
+            val after = text.substring(anchor.range.last + 1)
+            val candidates = listOf(after) + texts.drop(index + 1).take(1)
+            for (candidate in candidates) {
+                val token = TOKEN.find(candidate)?.value?.trimEnd('-')
+                if (!token.isNullOrEmpty()) return Label.normalizeArticle(token)
+            }
+        }
+        return null
+    }
+
     /**
      * Un unico separador se toma como decimal, sea coma o punto.
      *

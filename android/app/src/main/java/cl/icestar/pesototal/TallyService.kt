@@ -52,6 +52,7 @@ class TallyService : Service() {
             it.show()
         }
         InsertAccessibilityService.onTargetDetected = { kg -> overlay?.onTargetDetected(kg) }
+        InsertAccessibilityService.onArticleDetected = { a -> overlay?.onArticleDetected(a) }
         cameraHandler = { raw -> onScan(raw, fromCamera = true) }
         settingsChanged = { overlay?.refresh() }
 
@@ -77,6 +78,7 @@ class TallyService : Service() {
     override fun onDestroy() {
         isRunning = false
         InsertAccessibilityService.onTargetDetected = null
+        InsertAccessibilityService.onArticleDetected = null
         cameraHandler = null
         settingsChanged = null
         Voice.stop()
@@ -133,11 +135,26 @@ class TallyService : Service() {
             overlay?.onScanRejected(WeightParser.clean(raw))
             return
         }
-        if (tally.add(result.kg, result.code)) {
-            overlay?.onScanAdded(result.kg)
-        } else {
+        val chain = Label.parse(result.code)?.key.orEmpty()
+        if (!tally.add(result.kg, result.code, chain)) {
             overlay?.onDuplicate()
+            return
         }
+
+        // Con articulo pedido en pantalla la suma es la de ese articulo, sea
+        // cual sea el lote; otro articulo queda en su propia cadena y avisa.
+        // Sin articulo pedido, la burbuja sigue a la ultima cadena leida.
+        val wanted = settings.screenArticle
+        if (wanted.isNotEmpty()) {
+            settings.selection = wanted
+            if (!Label.matches(chain, wanted)) {
+                overlay?.onOtherArticle(chain, wanted)
+                return
+            }
+        } else {
+            settings.selection = chain
+        }
+        overlay?.onScanAdded(result.kg)
     }
 
     // ------------------------------------------------------------- notificacion
@@ -159,8 +176,8 @@ class TallyService : Service() {
             .setContentTitle(
                 getString(
                     R.string.notif_total,
-                    WeightParser.format(tally.total, settings.comma),
-                    tally.count
+                    WeightParser.format(tally.total(settings.selection), settings.comma),
+                    tally.count(settings.selection)
                 )
             )
             .setContentText(

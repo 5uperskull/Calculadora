@@ -146,4 +146,38 @@ class TallyTest {
         assertEquals(11.5, t.total, 0.0)
         assertFalse(t.snapshot()[0].manual)
     }
+
+    @Test
+    fun `dos cadenas nunca se suman juntas`() {
+        val t = Tally(MemStore())
+        t.add(10.0, "A", "1|L1|261127"); t.add(5.0, "B", "2|L2|261117"); t.add(2.5, "C", "1|L1|261127")
+        assertEquals(12.5, t.total("1|L1|261127"), 0.0)
+        assertEquals(5.0, t.total("2|L2|261117"), 0.0)
+        assertEquals(2, t.groups().size)
+        assertEquals("1|L1|261127", t.groups().first().key)
+    }
+
+    @Test
+    fun `articulo suma todos sus lotes`() {
+        val t = Tally(MemStore())
+        t.add(10.0, "A", "1|L1|261127"); t.add(4.0, "B", "1|L2|261130"); t.add(5.0, "C", "2|L3|261117")
+        assertEquals(14.0, t.total("1"), 0.0)
+    }
+
+    @Test
+    fun `cerrar una cadena deja las otras y deshacer la devuelve`() {
+        val t = Tally(MemStore())
+        t.add(10.0, "A", "1|L1|X"); t.add(5.0, "B", "2|L2|Y")
+        t.clear("1|L1|X")
+        assertEquals(5.0, t.total, 0.0)
+        assertTrue(t.undo())
+        assertEquals(15.0, t.total, 0.0)
+    }
+
+    @Test
+    fun `la cadena sobrevive al guardado`() {
+        val store = MemStore()
+        Tally(store).apply { add(10.0, "A", "1|L1|X"); addManual(2.0, "1|L1|X") }
+        assertEquals(12.0, Tally(store).total("1|L1|X"), 0.0)
+    }
 }

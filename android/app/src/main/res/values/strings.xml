@@ -54,6 +54,9 @@ En la burbuja, con el WMS al frente, mantén pulsada la línea Objetivo del pane
 
     <string name="sin_peso">Sin peso en el código: %1$s</string>
     <string name="sin_lineas">Todavía no hay etiquetas</string>
+    <string name="sin_cadena">Sin cadena</string>
+    <string name="articulo_pedido">Artículo pedido: %1$s</string>
+    <string name="otro_articulo">Otro artículo (%1$s): no suma a %2$s</string>
     <string name="nada_que_deshacer">Nada que deshacer</string>
     <string name="nada_que_insertar">Nada que insertar</string>
     <string name="insertado">Insertado %1$s</string>

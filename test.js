@@ -40,6 +40,10 @@ const cases = [
     assert.strictEqual(parseWeight(REAL.replace('3103', 'XYZ3')).kg, 11.5);
   }],
 
+  ['articulo que termina en 310 (1045310) -> peso en posicion fija', function () {
+    assert.strictEqual(parseWeight('921045310310301173010264430961R17261127').kg, 11.73);
+  }],
+
   ['codigo sin peso -> error, no inventa numero', function () {
     const r = parseWeight('abc123');
     assert.strictEqual(r.ok, false);

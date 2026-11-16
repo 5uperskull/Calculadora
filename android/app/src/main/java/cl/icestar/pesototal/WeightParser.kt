@@ -30,11 +30,18 @@ object WeightParser {
 
     /**
      * Via correcta: GS1 AI 310n = peso neto en kg, n decimales, 6 digitos.
-     * ponytail: el 310 podria aparecer por coincidencia dentro de otro campo
-     * numerico. Si eso pasa en terreno, anclar el AI a posicion fija.
+     *
+     * En la etiqueta propia (92 + articulo de 7 digitos) el AI va fijo en la
+     * posicion 10, igual que la plantilla Excel. Buscarlo en cualquier parte
+     * fallaba con el articulo 1045310: su 310 final se leia como el peso.
      */
     private fun fromGs1(code: String): Pair<Double, String>? {
-        val m = GS1.find(code) ?: return null
+        val anchored = if (code.startsWith("92") && code.length > Label.WEIGHT_AT) {
+            GS1.find(code, Label.WEIGHT_AT)?.takeIf { it.range.first == Label.WEIGHT_AT }
+        } else {
+            null
+        }
+        val m = anchored ?: GS1.find(code) ?: return null
         val decimals = m.groupValues[1].toInt()
         val digits = m.groupValues[2].toLong()
         val kg = digits / Math.pow(10.0, decimals.toDouble())

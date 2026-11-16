@@ -69,8 +69,19 @@ class InsertAccessibilityService : AccessibilityService() {
     /** Corre en el hilo de fondo; solo el resultado vuelve al principal. */
     private fun scanForTarget() {
         val settings = PesoApp.instance.settings
-        val found = TargetScraper.findTarget(readScreenTexts(120), settings.targetAnchor)
-            ?: return
+        val texts = readScreenTexts(120)
+
+        // El articulo va antes que el peso: asi, cuando llegan los dos, la
+        // burbuja ya compara el objetivo contra la suma del articulo correcto.
+        val article = TargetScraper.findArticle(texts)
+        if (article != null && article != settings.screenArticle) {
+            main.post {
+                settings.screenArticle = article
+                onArticleDetected?.invoke(article)
+            }
+        }
+
+        val found = TargetScraper.findTarget(texts, settings.targetAnchor) ?: return
         // Un peso imposible es un numero mal leido, no un pedido raro.
         if (found <= 0.0 || found > WeightParser.MAX_KG) return
         if (found == settings.targetKg) return
@@ -90,6 +101,9 @@ class InsertAccessibilityService : AccessibilityService() {
 
         /** Lo llena TallyService para llevar el objetivo detectado a la burbuja. */
         var onTargetDetected: ((Double) -> Unit)? = null
+
+        /** Igual que [onTargetDetected], para el articulo que pide el WMS. */
+        var onArticleDetected: ((String) -> Unit)? = null
 
         private const val SCAN_DEBOUNCE_MS = 600L
 
