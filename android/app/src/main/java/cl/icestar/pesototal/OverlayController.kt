@@ -699,6 +699,9 @@ class OverlayController(
             "$manualBuffer kg"
         }
         manualValue.setTextColor(ctx.getColor(if (empty) R.color.dim else R.color.txt))
+        // La ayuda en chico y en un renglon: a 24sp ocupaba tres y la caja se
+        // encogia con el primer digito, moviendo las teclas bajo el dedo.
+        manualValue.textSize = if (empty) 13f else 24f
     }
 
     /** Entrada humana: se valida y se rechaza, nunca se corrige por dentro. */

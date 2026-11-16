@@ -13,8 +13,8 @@
     <string name="camara_sin_burbuja">La burbuja no está activa: el código no se sumó.</string>
     <string name="agregar">Agregar</string>
     <string name="cancelar">Cancelar</string>
-    <string name="manual_hint">Teclea el peso en kg</string>
-    <string name="objetivo_hint">Teclea el objetivo en kg (0 lo borra)</string>
+    <string name="manual_hint">Peso en kg</string>
+    <string name="objetivo_hint">Objetivo en kg · 0 lo borra</string>
     <string name="objetivo_vacio">Sin objetivo · tocar para fijar</string>
     <string name="objetivo_fijado">Objetivo %1$s kg</string>
     <string name="objetivo_falta">Objetivo %1$s kg · faltan %2$s</string>
