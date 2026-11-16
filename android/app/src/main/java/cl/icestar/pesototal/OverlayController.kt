@@ -246,6 +246,7 @@ class OverlayController(
         val got = chain.substringBefore(Label.SEP).ifEmpty { ctx.getString(R.string.sin_cadena) }
         status(ctx.getString(R.string.otro_articulo, got, wanted))
         buzz(BUZZ_DUP)
+        if (settings.sound) Voice.say(Voice.Clip.ARTICULO_INCORRECTO)
         render()
         handler.removeCallbacks(endDuplicateFlash)
         handler.postDelayed(endDuplicateFlash, DUPLICATE_FLASH_MS)

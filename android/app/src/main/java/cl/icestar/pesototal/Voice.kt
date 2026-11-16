@@ -24,7 +24,8 @@ object Voice {
         DUPLICADO(R.raw.voz_duplicado),
         SIN_PESO(R.raw.voz_sin_peso),
         COMPLETO(R.raw.voz_completo),
-        EXCEDIDO(R.raw.voz_excedido)
+        EXCEDIDO(R.raw.voz_excedido),
+        ARTICULO_INCORRECTO(R.raw.voz_articulo_incorrecto)
     }
 
     private var pool: SoundPool? = null
