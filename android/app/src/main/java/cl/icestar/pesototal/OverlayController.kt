@@ -199,7 +199,7 @@ class OverlayController(
             ?.takeIf { it.isNotEmpty() && it != ctx.packageName }
             ?.let { settings.wmsPackage = it }
 
-        TargetScraper.findArticle(texts)?.let {
+        TargetScraper.findArticle(texts)?.takeIf { settings.screenArticleRead }?.let {
             settings.screenArticle = it
             settings.selection = it
         }

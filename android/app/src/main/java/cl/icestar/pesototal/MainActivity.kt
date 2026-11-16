@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var edgeBar: CheckBox
     private lateinit var sound: CheckBox
     private lateinit var screenTarget: CheckBox
+    private lateinit var screenArticle: CheckBox
     private lateinit var cutKeystroke: CheckBox
     private lateinit var test: EditText
     private lateinit var testResult: TextView
@@ -93,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         edgeBar = findViewById(R.id.edgeBar)
         sound = findViewById(R.id.sound)
         screenTarget = findViewById(R.id.screenTarget)
+        screenArticle = findViewById(R.id.screenArticle)
         cutKeystroke = findViewById(R.id.cutKeystroke)
         test = findViewById(R.id.test)
         testResult = findViewById(R.id.testResult)
@@ -243,6 +245,7 @@ class MainActivity : AppCompatActivity() {
         edgeBar.isChecked = s.edgeBar
         sound.isChecked = s.sound
         screenTarget.isChecked = s.screenTarget
+        screenArticle.isChecked = s.screenArticleRead
         cutKeystroke.isChecked = s.cutKeystroke
     }
 
@@ -262,9 +265,15 @@ class MainActivity : AppCompatActivity() {
         s.edgeBar = edgeBar.isChecked
         s.sound = sound.isChecked
         s.screenTarget = screenTarget.isChecked
+        s.screenArticleRead = screenArticle.isChecked
+        if (!s.screenArticleRead && s.screenArticle.isNotEmpty()) {
+            // Un articulo leido antes de apagar seguiria filtrando la suma.
+            if (s.selection == s.screenArticle) s.selection = Label.ALL
+            s.screenArticle = ""
+        }
         // El alcance del servicio se amplia o se reduce aqui mismo: apagar la
         // casilla surte efecto sin reinstalar.
-        InsertAccessibilityService.applyScope(s.screenTarget)
+        InsertAccessibilityService.applyScope(s.readsScreen)
         s.cutKeystroke = cutKeystroke.isChecked
         fill()
 

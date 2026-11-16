@@ -110,6 +110,18 @@ class Settings(ctx: Context) {
         get() = p.getBoolean("screenTarget", false)
         set(v) = put("screenTarget", v)
 
+    /**
+     * Leer el articulo que pide la pantalla del WMS y sumar solo ese.
+     * Separado de [screenTarget]: se puede leer el peso sin el articulo y al
+     * reves. Apagado por defecto, igual que la lectura del peso.
+     */
+    var screenArticleRead: Boolean
+        get() = p.getBoolean("screenArticleRead", false)
+        set(v) = put("screenArticleRead", v)
+
+    /** Alguna de las dos lecturas de pantalla esta encendida. */
+    val readsScreen: Boolean get() = screenTarget || screenArticleRead
+
     /** Texto de la pantalla del WMS que precede al peso pedido. */
     var targetAnchor: String
         get() = str("targetAnchor", TargetScraper.DEFAULT_ANCHOR)

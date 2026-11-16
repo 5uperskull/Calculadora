@@ -33,7 +33,7 @@ class InsertAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
-        applyScope(PesoApp.instance.settings.screenTarget)
+        applyScope(PesoApp.instance.settings.readsScreen)
     }
 
     override fun onDestroy() {
@@ -46,7 +46,7 @@ class InsertAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         val settings = PesoApp.instance.settings
-        if (!settings.screenTarget) return
+        if (!settings.readsScreen) return
 
         val pkg = event.packageName?.toString().orEmpty()
         // La propia burbuja genera eventos al redibujarse: cada relectura
@@ -73,7 +73,7 @@ class InsertAccessibilityService : AccessibilityService() {
 
         // El articulo va antes que el peso: asi, cuando llegan los dos, la
         // burbuja ya compara el objetivo contra la suma del articulo correcto.
-        val article = TargetScraper.findArticle(texts)
+        val article = TargetScraper.findArticle(texts).takeIf { settings.screenArticleRead }
         if (article != null && article != settings.screenArticle) {
             main.post {
                 settings.screenArticle = article
@@ -81,6 +81,7 @@ class InsertAccessibilityService : AccessibilityService() {
             }
         }
 
+        if (!settings.screenTarget) return
         val found = TargetScraper.findTarget(texts, settings.targetAnchor) ?: return
         // Un peso imposible es un numero mal leido, no un pedido raro.
         if (found <= 0.0 || found > WeightParser.MAX_KG) return
@@ -110,7 +111,7 @@ class InsertAccessibilityService : AccessibilityService() {
         /**
          * Amplia o reduce el alcance en caliente. Declarado en XML solo escucha
          * el foco de entrada; los cambios de pantalla se piden aqui, y solo si
-         * el cliente encendio la lectura del objetivo.
+         * el cliente encendio la lectura del objetivo o la del articulo.
          */
         fun applyScope(readScreen: Boolean) {
             val svc = instance ?: return
