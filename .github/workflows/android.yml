@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+      PESO_KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
     steps:
       - uses: actions/checkout@v5
 
@@ -34,6 +37,14 @@ jobs:
           find . -name "*.xml" -path "*test-results*" -print -exec cat {} \; || true
           echo "=============== INFORMES HTML =================="
           find . -path "*reports/tests*" -name "*.html" -print || true
+
+      # Sin el secreto el APK sale igual, pero con llave de un solo uso: no
+      # se podra instalar encima de la version anterior.
+      - name: Llave de firma
+        if: env.KEYSTORE_B64 != ''
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/peso.p12"
+          echo "PESO_KEYSTORE=$RUNNER_TEMP/peso.p12" >> "$GITHUB_ENV"
 
       - name: Ensamblar APK
         working-directory: android

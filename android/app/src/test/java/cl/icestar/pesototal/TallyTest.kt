@@ -57,12 +57,14 @@ class TallyTest {
     }
 
     @Test
-    fun `codigo repetido no se suma`() {
+    fun `codigo repetido se suma igual y queda marcado`() {
         val t = Tally(MemStore())
         assertTrue(t.add(11.5, "A"))
         assertFalse(t.add(11.5, "A"))
-        assertEquals(11.5, t.total, 0.0)
-        assertEquals(1, t.count)
+        assertEquals(23.0, t.total, 0.0)
+        assertEquals(2, t.count)
+        assertFalse(t.snapshot()[0].duplicate)
+        assertTrue(t.snapshot()[1].duplicate)
     }
 
     @Test

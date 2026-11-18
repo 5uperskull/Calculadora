@@ -35,7 +35,7 @@ En la burbuja, con el WMS al frente, mantén pulsada la línea Objetivo del pane
     <string name="salir_confirmar">¿Seguro?</string>
     <string name="salir_aviso">Toca otra vez para apagar la burbuja</string>
     <string name="duplicado">Etiqueta repetida</string>
-    <string name="duplicado_no_sumado">Etiqueta repetida: no se sumó</string>
+    <string name="duplicado_sumado">Repetida: se sumó igual (Deshacer la quita)</string>
     <string name="accion_paso">%1$s %2$d/%3$d</string>
     <string name="st_voz">Voz disponible: %1$s</string>
     <string name="st_burbuja">Burbuja activa: %1$s</string>

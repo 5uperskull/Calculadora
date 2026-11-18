@@ -35,6 +35,21 @@ artefacto `peso-total-apk`. Dentro va `app-debug.apk`.
 
 Los tests corren antes de ensamblar: si el parser se rompe, no sale APK.
 
+### Llave de firma: para actualizar sin desinstalar
+
+Android solo instala encima si el APK nuevo está firmado con la **misma llave**.
+La llave va en dos secretos del repositorio (Settings → Secrets and variables →
+Actions), nunca en el código, porque el repositorio es público:
+
+| Secreto | Contenido |
+|---|---|
+| `KEYSTORE_B64` | el archivo `firma/peso-total.p12` en base64 (`firma/peso-total.p12.b64.txt`) |
+| `KEYSTORE_PASSWORD` | la clave de `firma/clave.txt` |
+
+La carpeta `firma/` no se sube. **Respáldala**: si se pierde la llave, cada
+terminal tendrá que desinstalar una vez más. Sin los secretos el APK sale
+igual, pero no se puede instalar encima del anterior.
+
 ## 2. Instalar y dar permisos
 
 1. Copia el APK al terminal e instálalo (hay que permitir orígenes desconocidos).
@@ -210,7 +225,8 @@ menú. Ahorra repetir todo esto equipo por equipo.
 3. Escanea las etiquetas. La burbuja va marcando `34,7 kg · 3` y **vibra** en
    cada lectura: una vibración corta confirma, dos seguidas avisan de etiqueta
    repetida. Además **lo dice en voz alta**: *"Duplicado"* si la etiqueta ya se
-   había leído, *"Sin peso"* si el código no trae peso.
+   había leído (igual se suma: si fue un doble disparo, **Deshacer** la quita),
+   *"Sin peso"* si el código no trae peso.
 4. Toca la burbuja para ver el detalle, deshacer o borrar una línea.
    Si una etiqueta está rota y el lector no la lee, toca **Manual** y teclea el
    peso: se suma igual y queda marcado en azul en la lista, para que se sepa que
@@ -272,7 +288,9 @@ Se apaga en Ajustes con *Insertar el peso en dos momentos*.
 | Señal | Qué significa |
 |---|---|
 | Borde azul | Todo normal |
-| **Amarillo unos segundos** | Esa etiqueta ya se había leído. **No se suma**: sólo avisa, vibra doble y dice *"duplicado"* |
+| **Amarillo unos segundos** | Esa etiqueta ya se había leído. **Se suma igual**, vibra doble, dice *"duplicado"* y la línea queda en amarillo para quitarla si sobra |
+| Burbuja **azul llena**, chip **SUMA** amarillo | Los escaneos alimentan la suma |
+| Burbuja **gris**, chip **WMS** | El escaneo va al WMS |
 | Chip **SUMA** encendido | Los escaneos alimentan la suma |
 | Chip **WMS** apagado | Los escaneos van al WMS |
 

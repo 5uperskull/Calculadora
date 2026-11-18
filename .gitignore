@@ -4,3 +4,5 @@ local.properties
 .idea/
 *.iml
 app.artifact.html
+# Llave de firma: se respalda aparte, nunca se sube.
+firma/

@@ -68,17 +68,17 @@ class Tally(private val store: Store) {
     }
 
     /**
-     * Un codigo ya leido no se suma: solo se avisa. En piso un doble disparo es
-     * mucho mas comun que dos cajas con la misma etiqueta.
+     * Un codigo ya leido se suma igual, marcado como repetido: el operario oye
+     * el aviso y decide. Si fue un doble disparo, Deshacer o la X lo quitan.
      *
-     * @return false si era repetido y no se sumo.
+     * @return false si era repetido (se sumo de todos modos).
      */
     fun add(kg: Double, code: String, chain: String = ""): Boolean {
-        if (lines.any { !it.manual && it.code == code }) return false
-        lines += Line(WeightParser.round3(kg), code, duplicate = false, chain = chain)
+        val repeated = lines.any { !it.manual && it.code == code }
+        lines += Line(WeightParser.round3(kg), code, duplicate = repeated, chain = chain)
         undoSnapshot = emptyList()
         commit()
-        return true
+        return !repeated
     }
 
     /**

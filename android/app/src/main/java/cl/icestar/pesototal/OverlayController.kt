@@ -136,12 +136,12 @@ class OverlayController(
     }
 
     /**
-     * Etiqueta ya leida: no se suma, solo se avisa. La pastilla se pone amarilla
-     * unos segundos y vuelve sola, porque no hay linea nueva que la sostenga.
+     * Etiqueta ya leida: se sumo igual, pero se avisa en voz y en amarillo
+     * unos segundos. La linea queda marcada en la lista para quitarla si sobra.
      */
     fun onDuplicate() {
         duplicateUntil = SystemClock.uptimeMillis() + DUPLICATE_FLASH_MS
-        status(ctx.getString(R.string.duplicado_no_sumado))
+        status(ctx.getString(R.string.duplicado_sumado))
         buzz(BUZZ_DUP)
         if (settings.sound) Voice.say(Voice.Clip.DUPLICADO)
         render()
@@ -337,7 +337,8 @@ class OverlayController(
                 state == Target.State.EXCEDIDO -> R.drawable.bg_pill_over
                 state == Target.State.EN_PESO -> R.drawable.bg_pill_ok
                 duplicate -> R.drawable.bg_pill_dup
-                else -> R.drawable.bg_pill
+                settings.sumMode -> R.drawable.bg_pill_sum
+                else -> R.drawable.bg_pill_wms
             }
         )
         totalView.setTextColor(
@@ -347,14 +348,16 @@ class OverlayController(
                     state == Target.State.EXCEDIDO -> R.color.white
                     state == Target.State.EN_PESO -> R.color.green
                     duplicate -> R.color.amber
-                    else -> R.color.txt
+                    settings.sumMode -> R.color.white
+                    else -> R.color.dim
                 }
             )
         )
 
         modeChip.text = ctx.getString(if (settings.sumMode) R.string.modo_suma else R.string.modo_wms)
+        // SUMA en amarillo sobre la pastilla azul; WMS gris sobre gris.
         modeChip.setBackgroundResource(
-            if (settings.sumMode) R.drawable.bg_chip_on else R.drawable.bg_chip_off
+            if (settings.sumMode) R.drawable.bg_chip_sum else R.drawable.bg_chip_off
         )
         // El chip apagado es gris oscuro: el texto oscuro del XML no se leeria.
         modeChip.setTextColor(ctx.getColor(if (settings.sumMode) R.color.bg else R.color.txt))
@@ -767,6 +770,10 @@ class OverlayController(
     private fun setMode(sum: Boolean) {
         settings.sumMode = sum
         applyScannerMode(sum)
+        // Ademas del color, el cambio se dice y se siente: con guantes no se
+        // mira la burbuja a cada rato.
+        status(ctx.getString(if (sum) R.string.modo_suma_largo else R.string.modo_wms_largo))
+        buzz(BUZZ_OK)
         render()
         wake()
     }

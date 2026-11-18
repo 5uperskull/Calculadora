@@ -85,11 +85,45 @@ class InsertAccessibilityService : AccessibilityService() {
         val found = TargetScraper.findTarget(texts, settings.targetAnchor) ?: return
         // Un peso imposible es un numero mal leido, no un pedido raro.
         if (found <= 0.0 || found > WeightParser.MAX_KG) return
+        clearPrefilled()
         if (found == settings.targetKg) return
         main.post {
             settings.targetKg = found
             onTargetDetected?.invoke(found)
         }
+    }
+
+    /** Ultimo campo vaciado: no se vuelve a tocar mientras se escribe en el. */
+    private var cleared: AccessibilityNodeInfo? = null
+
+    /**
+     * El WMS precarga un valor en el campo del peso, y un Enter por reflejo
+     * lo confirmaba. Se vacia una vez por campo: cuando el WMS pide el peso de
+     * nuevo trae un campo nuevo, y el que el operario esta llenando no se toca.
+     *
+     * ponytail: si el WMS reusara el mismo campo entre pantallas, la segunda
+     * vez no se vaciaria; se veria al probar y habria que comparar el texto.
+     */
+    private fun clearPrefilled() {
+        val node = findFocus(AccessibilityNodeInfo.FOCUS_INPUT) ?: return
+        if (!node.isEditable || node == cleared) return
+        if (node.text.isNullOrEmpty()) {
+            cleared = node
+            return
+        }
+        val empty = Bundle().apply {
+            putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "")
+        }
+        // Los campos web rechazan SET_TEXT a menudo: se selecciona todo y se corta.
+        val done = node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, empty) || run {
+            val all = Bundle().apply {
+                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT, 0)
+                putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT, node.text.length)
+            }
+            node.performAction(AccessibilityNodeInfo.ACTION_SET_SELECTION, all) &&
+                node.performAction(AccessibilityNodeInfo.ACTION_CUT)
+        }
+        if (done) cleared = node
     }
 
     override fun onInterrupt() = Unit

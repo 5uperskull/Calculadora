@@ -136,10 +136,7 @@ class TallyService : Service() {
             return
         }
         val chain = Label.parse(result.code)?.key.orEmpty()
-        if (!tally.add(result.kg, result.code, chain)) {
-            overlay?.onDuplicate()
-            return
-        }
+        val repeated = !tally.add(result.kg, result.code, chain)
 
         // Con articulo pedido en pantalla la suma es la de ese articulo, sea
         // cual sea el lote; otro articulo queda en su propia cadena y avisa.
@@ -154,7 +151,7 @@ class TallyService : Service() {
         } else {
             settings.selection = chain
         }
-        overlay?.onScanAdded(result.kg)
+        if (repeated) overlay?.onDuplicate() else overlay?.onScanAdded(result.kg)
     }
 
     // ------------------------------------------------------------- notificacion
