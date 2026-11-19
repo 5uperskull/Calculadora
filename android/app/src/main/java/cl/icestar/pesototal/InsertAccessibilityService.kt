@@ -85,7 +85,7 @@ class InsertAccessibilityService : AccessibilityService() {
         val found = TargetScraper.findTarget(texts, settings.targetAnchor) ?: return
         // Un peso imposible es un numero mal leido, no un pedido raro.
         if (found <= 0.0 || found > WeightParser.MAX_KG) return
-        clearPrefilled()
+        clearPrefilled(TargetScraper.findArticle(texts).orEmpty(), found)
         if (found == settings.targetKg) return
         main.post {
             settings.targetKg = found
@@ -101,16 +101,21 @@ class InsertAccessibilityService : AccessibilityService() {
      * lo confirmaba. Se vacia una vez por campo: cuando el WMS pide el peso de
      * nuevo trae un campo nuevo, y el que el operario esta llenando no se toca.
      *
+     * La pantalla de confirmar articulo es igual a la del peso, asi que se
+     * mira el CONTENIDO del campo: solo se vacia si trae la cantidad pendiente,
+     * nunca el articulo (aunque sea de pocos digitos) ni una etiqueta.
+     *
      * ponytail: si el WMS reusara el mismo campo entre pantallas, la segunda
      * vez no se vaciaria; se veria al probar y habria que comparar el texto.
      */
-    private fun clearPrefilled() {
+    private fun clearPrefilled(article: String, pending: Double) {
         val node = findFocus(AccessibilityNodeInfo.FOCUS_INPUT) ?: return
         if (!node.isEditable || node == cleared) return
         if (node.text.isNullOrEmpty()) {
             cleared = node
             return
         }
+        if (!TargetScraper.isPrefilledWeight(node.text.toString(), article, pending)) return
         val empty = Bundle().apply {
             putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "")
         }

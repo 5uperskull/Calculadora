@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modo SUMA: azul lleno y borde grueso, para notarla de reojo. -->
+<!-- Modo SUMA: amarillo de marca lleno con borde blanco. Sobre el WMS es lo
+     que mas salta a la vista, y no se confunde con verde (en peso) ni con
+     rojo (excedido). -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="@color/blue" />
-    <stroke android:width="3dp" android:color="@color/ice" />
+    <solid android:color="@color/amber" />
+    <stroke android:width="3dp" android:color="@color/white" />
     <corners android:radius="22dp" />
 </shape>

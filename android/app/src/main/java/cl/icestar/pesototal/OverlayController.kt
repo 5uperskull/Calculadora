@@ -332,15 +332,17 @@ class OverlayController(
 
         val duplicate = SystemClock.uptimeMillis() < duplicateUntil
         // El exceso manda sobre el duplicado: es el error que cuesta plata.
-        pill.setBackgroundResource(
-            when {
-                state == Target.State.EXCEDIDO -> R.drawable.bg_pill_over
-                state == Target.State.EN_PESO -> R.drawable.bg_pill_ok
-                duplicate -> R.drawable.bg_pill_dup
-                settings.sumMode -> R.drawable.bg_pill_sum
-                else -> R.drawable.bg_pill_wms
-            }
-        )
+        val pillBg = when {
+            state == Target.State.EXCEDIDO -> R.drawable.bg_pill_over
+            state == Target.State.EN_PESO -> R.drawable.bg_pill_ok
+            duplicate -> R.drawable.bg_pill_dup
+            settings.sumMode -> R.drawable.bg_pill_sum
+            else -> R.drawable.bg_pill_wms
+        }
+        pill.setBackgroundResource(pillBg)
+        // Sobre el amarillo de SUMA, texto navy: el claro no se leeria.
+        val onAmber = pillBg == R.drawable.bg_pill_sum
+        countView.setTextColor(ctx.getColor(if (onAmber) R.color.bg else R.color.dim))
         totalView.setTextColor(
             ctx.getColor(
                 when {
@@ -348,19 +350,19 @@ class OverlayController(
                     state == Target.State.EXCEDIDO -> R.color.white
                     state == Target.State.EN_PESO -> R.color.green
                     duplicate -> R.color.amber
-                    settings.sumMode -> R.color.white
+                    onAmber -> R.color.bg
                     else -> R.color.dim
                 }
             )
         )
 
         modeChip.text = ctx.getString(if (settings.sumMode) R.string.modo_suma else R.string.modo_wms)
-        // SUMA en amarillo sobre la pastilla azul; WMS gris sobre gris.
+        // SUMA: chip navy con letra amarilla sobre la pastilla amarilla.
         modeChip.setBackgroundResource(
             if (settings.sumMode) R.drawable.bg_chip_sum else R.drawable.bg_chip_off
         )
         // El chip apagado es gris oscuro: el texto oscuro del XML no se leeria.
-        modeChip.setTextColor(ctx.getColor(if (settings.sumMode) R.color.bg else R.color.txt))
+        modeChip.setTextColor(ctx.getColor(if (settings.sumMode) R.color.amber else R.color.txt))
 
         val action = ctx.getString(
             if (InsertAccessibilityService.isRunning) R.string.insertar else R.string.copiar

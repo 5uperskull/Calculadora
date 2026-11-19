@@ -1,7 +1,9 @@
 package cl.icestar.pesototal
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TargetScraperTest {
@@ -19,6 +21,23 @@ class TargetScraperTest {
         "40",
         "2:Incidencia"
     )
+
+    @Test
+    fun `solo se vacia el campo que trae la cantidad pendiente, nunca el articulo`() {
+        // Pantalla del peso: el campo trae la misma cantidad pendiente.
+        assertTrue(TargetScraper.isPrefilledWeight("40", "1050783C", 40.0))
+        assertTrue(TargetScraper.isPrefilledWeight(" 12,500 ", "", 12.5))
+        assertTrue(TargetScraper.isPrefilledWeight("12.5", "", 12.5))
+        // Pantalla del articulo: articulos cortos, largos o con letras.
+        assertFalse(TargetScraper.isPrefilledWeight("123", "123", 40.0))
+        assertFalse(TargetScraper.isPrefilledWeight("85", "", 40.0))
+        assertFalse(TargetScraper.isPrefilledWeight("1050783C", "1050783C", 40.0))
+        assertFalse(TargetScraper.isPrefilledWeight("1000979", "", 40.0))
+        assertFalse(TargetScraper.isPrefilledWeight("AYUDA_10", "AYUDA_10", 40.0))
+        assertFalse(TargetScraper.isPrefilledWeight("921000979310301173010264430961R17261127", "", 40.0))
+        // Articulo corto que coincide con la cantidad: manda el articulo.
+        assertFalse(TargetScraper.isPrefilledWeight("40", "40", 40.0))
+    }
 
     @Test
     fun `saca el pedido de la pantalla real`() {

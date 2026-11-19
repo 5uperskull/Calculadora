@@ -54,6 +54,24 @@ object TargetScraper {
         return null
     }
 
+    private val WEIGHT_VALUE = Regex("""\d+(?:[.,]\d+)?""")
+
+    /**
+     * El campo trae lo que el WMS precarga en la pantalla del peso: la misma
+     * cantidad pendiente ("Cantidad pendiente: 40" y el campo con "40").
+     *
+     * No basta con que parezca un numero: hay articulos de 4 digitos o menos.
+     * Por eso tiene que ser igual a la cantidad pendiente, y distinto del
+     * articulo que muestra la pantalla.
+     */
+    fun isPrefilledWeight(value: String, article: String, pending: Double): Boolean {
+        val v = value.trim()
+        if (!WEIGHT_VALUE.matches(v)) return false
+        if (article.isNotEmpty() && Label.normalizeArticle(v) == article) return false
+        val kg = v.replace(',', '.').toDoubleOrNull() ?: return false
+        return kotlin.math.abs(kg - pending) < 0.0005
+    }
+
     /**
      * Un unico separador se toma como decimal, sea coma o punto.
      *

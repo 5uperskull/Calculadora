@@ -289,7 +289,7 @@ Se apaga en Ajustes con *Insertar el peso en dos momentos*.
 |---|---|
 | Borde azul | Todo normal |
 | **Amarillo unos segundos** | Esa etiqueta ya se había leído. **Se suma igual**, vibra doble, dice *"duplicado"* y la línea queda en amarillo para quitarla si sobra |
-| Burbuja **azul llena**, chip **SUMA** amarillo | Los escaneos alimentan la suma |
+| Burbuja **amarilla llena** con borde blanco, chip **SUMA** | Los escaneos alimentan la suma |
 | Burbuja **gris**, chip **WMS** | El escaneo va al WMS |
 | Chip **SUMA** encendido | Los escaneos alimentan la suma |
 | Chip **WMS** apagado | Los escaneos van al WMS |
